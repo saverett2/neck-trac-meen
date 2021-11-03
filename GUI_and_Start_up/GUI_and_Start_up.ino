@@ -47,7 +47,8 @@ int buttonBottomState = 0;
 int CaseValMain = 1;
 int CaseValStart = 1;
 long
-
+char continueString = String("Continue");
+char backString = String("Back");
 
 
 
@@ -139,6 +140,7 @@ case 1:
   buttonTopState = digitalRead(buttonPinTop);
   buttonMidState = digitalRead(buttonPinMid);
   buttonBottomState = digitalRead(buttonPinBottom);
+  EStopState
 
   if (buttonTopState == HIGH) {
     // Some action is preformed
@@ -166,21 +168,90 @@ void runStartWarnings() {
 
     if (initialForce > -0.01 && initialForce < 0.01) { // If function is outputing 0 values consistently the load cell is not connected properly
         char iniForceRead = String(" Warning: Force sensor not connected properly");
+      // add enlarge function for size****
+      // add position of actual text*****
         tft.textTransparent(RA8875_WHITE); // GUI white text
         tft.textWrite(iniForceRead); // Print on GUI 
+    }
     if(initialForce > 0.01){
-      
+      tft.fillScreen(RA8875_BLACK);
+      char ForceSenString = String("Force Sensor is connected");
+      // add enlarge function for size****
+      // add position of actual text****
+      tft.textTransparent(RA8875_WHITE); // GUI white text
+      tft.textWrite(iniForceRead); // Print on GUI 
+      // Show Continue Text Next to top button to switch to next case
+      tft.textSetCursor(100, 100); // THIS NEEDS TO CHANGE TO BE NEXT TO THE TOP BUTTON
+      tft.textTransparent(RA8875_WHITE); // GUI white text
+      tft.textWrite(continueString); // Print on GUI 
     }
-        
-        
-    }
-    char 
-       
-
-      case 2:
-
+      if (buttonStateTop == HIGH){ // If continue button is pressed, then move to case 2 of the runStartWarnings function
+        CaseValStart = 2;
+        break;
       }
-
-
-
-  }
+      
+   case 2:
+      char BedConString = String("Is the device secured to the bed and plugged in?")
+      tft.fillScreen(RA8875_BLACK);
+      // Set Cursor / Set the location of the text to be in the middle***
+      tft.textTransparent(RA8875_WHITE); // GUI white text
+      tft.textWrite(BedConString); // Print on GUI
+      // Show "Continue" Text Next to top button to switch to next case
+      tft.textSetCursor(100, 100); // THIS NEEDS TO CHANGE TO BE NEXT TO THE TOP BUTTON****
+      tft.textTransparent(RA8875_WHITE); // GUI white text
+      tft.textWrite(continueString); // Print on GUI
+      // Show "Back" text next to middle button to switch to previous case
+      tft.textSetCursor(100, 100); // THIS NEEDS TO CHANGE TO BE NEXT TO THE Middle BUTTON****
+      tft.textTransparent(RA8875_WHITE); // GUI white text
+      tft.textWrite(backString); // Print on GUI  
+      
+      // Choose to continue or go back
+            if (buttonStateTop == HIGH){ // If continue button is pressed, then move to case 3 of the runStartWarnings function
+                CaseValStart = 3;
+                break;
+            }
+            if (buttonStateBottom == HIGH){ // If back buttin is pressed, then move to case 1 of the run StartWarnings function
+                CaseValStart = 1;
+                break;
+            }
+    case 3:
+      char AngleSec = String("Are all joint clamps secured?");
+      tft.fillScreen(RA8875_BLACK);
+      // Set Cursor / Set the location of the text to be in the middle***
+      tft.textTransparent(RA8875_WHITE); // GUI white text
+      tft.textWrite(AngleSec); // Print on GUI
+      
+      ///////////////////////************* Make this a seperate function to be called into this function to display "Continue and Back"
+      ContinueBack();
+      //////////////////////***************
+      
+      
+      // Choose to continue or go back
+            if (buttonStateTop == HIGH){ // If continue button is pressed, then move to case 4 of the runStartWarnings function
+                CaseValStart = 4;
+                break;
+            }
+            if (buttonStateBottom == HIGH){ // If back buttin is pressed, then move to case 2 of the run StartWarnings function
+                CaseValStart = 2;
+                break;
+            }
+      
+      
+      
+        
+        
+        
+        
+      }
+void ContinueBack(){
+      // Show "Continue" Text Next to top button to switch to next case
+      tft.textSetCursor(100, 100); // THIS NEEDS TO CHANGE TO BE NEXT TO THE TOP BUTTON****
+      tft.textTransparent(RA8875_WHITE); // GUI white text
+      tft.textWrite(continueString); // Print on GUI
+      tft.textSetCursor(100, 100); // THIS NEEDS TO CHANGE TO BE NEXT TO THE Middle BUTTON****
+      // Show "Back" text next to middle button to switch to previous case
+      tft.textTransparent(RA8875_WHITE); // GUI white text
+      tft.textWrite(backString); // Print on GUI
+}
+  
+  
