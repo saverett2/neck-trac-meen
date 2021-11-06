@@ -196,14 +196,7 @@ void runStartWarnings() {
       // Set Cursor / Set the location of the text to be in the middle***
       tft.textTransparent(RA8875_WHITE); // GUI white text
       tft.textWrite(BedConString); // Print on GUI
-      // Show "Continue" Text Next to top button to switch to next case
-      tft.textSetCursor(100, 100); // THIS NEEDS TO CHANGE TO BE NEXT TO THE TOP BUTTON****
-      tft.textTransparent(RA8875_WHITE); // GUI white text
-      tft.textWrite(continueString); // Print on GUI
-      // Show "Back" text next to middle button to switch to previous case
-      tft.textSetCursor(100, 100); // THIS NEEDS TO CHANGE TO BE NEXT TO THE Middle BUTTON****
-      tft.textTransparent(RA8875_WHITE); // GUI white text
-      tft.textWrite(backString); // Print on GUI  
+      ContinueBack(); 
       
       // Choose to continue or go back
             if (buttonStateTop == HIGH){ // If continue button is pressed, then move to case 3 of the runStartWarnings function
