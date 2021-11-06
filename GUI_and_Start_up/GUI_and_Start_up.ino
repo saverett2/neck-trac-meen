@@ -39,9 +39,9 @@ const int buttonPinTop = // Pin of Top Push button (Start/Stop) Function
       const int ledPin =  13;      //Should be changed to the dial pin
 
 // variables will change:
-boolean buttonTopState = 0;  // variable for reading the pushbutton status
-boolean buttonMidState = 0;
-boolean buttonBottomState = 0;
+bool buttonTopState = 0;  // variable for reading the pushbutton status
+bool buttonMidState = 0;
+bool buttonBottomState = 0;
 
 // Intial values
 int CaseValMain = 1;
