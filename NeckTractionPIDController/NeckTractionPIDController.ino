@@ -84,12 +84,6 @@ float calibrationFactor = -23550.f; // Found experimentally with nice load cell
 Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RESET);
 uint16_t tx, ty;
 
-
-
-
-
-
-
 // Creat PID object
 PID myPID(&currentForce, &travelSpeedPID, &desiredForce, Kp, Ki, Kd, DIRECT);
 
@@ -102,7 +96,6 @@ void setup() {
     while (1);
   }
 
-  
   Wire.begin(); 
   exitSafeStart(smcDeviceNumberL1); // Disable safe start and allow the motors to move
   exitSafeStart(smcDeviceNumberR2);
@@ -113,7 +106,6 @@ void setup() {
   tft.PWM1config(true, RA8875_PWM_CLK_DIV1024); // PWM output for backlight
   tft.PWM1out(255);
   tft.fillScreen(RA8875_BLACK); // Sets the color of the background.
-
 
   //Serial.print("Taring force sensor...");
   loadcell.begin(loadcellDOUT, loadcellSCK);
@@ -136,6 +128,7 @@ void setup() {
 void loop() {
   m1_pos = (float(analogRead(potPinM1)) - 34) * 150 / 842.0;
   m2_pos = (float(analogRead(potPinM2)) - 32) * 150 / 840;
+  
   desiredForce = analogRead(potPinContr) / 1024.0 * 200.0; //TEMPORARY TO COLLECT DATA
   RecvWithStartEndMarkers(); // Read data from serial monitor
 
@@ -151,17 +144,8 @@ void loop() {
     travelSpeedPercentage = (int) travelSpeedPID; // Cast to int to send to motors
     setSpeedBoth(travelSpeedPercentage); // set speed of the motors
   }
-  Serial.print(millis() / 1000.0);
-  Serial.print(",");
-  Serial.print(travelSpeedPID);
-  Serial.print(",");
-  Serial.print(currentForce);
-  Serial.print(",");
-  Serial.print(desiredForce);
-  Serial.print(",");
-  Serial.print(m1_pos);
-  Serial.print(",");
-  Serial.println(m2_pos);
+  
+  debugPrint();
 
   // If there are new orders for the robot, execute them
   if (newOrders) {
@@ -216,14 +200,6 @@ void loop() {
 
     newOrders = false; // Once orders have been executed, set boolean to false
   }
-  // For I2C LCD Screen, Not used, replace with RX
-  
-  //lcd.setCursor(0,0);
-  //lcd.print("Set F:  ");
-  //lcd.print(desiredForce);
-  //lcd.setCursor(0,1);
-  //lcd.print("Meas F: ");
-  //lcd.print(currentForce);
 
   // Send Measured Force from Load Cell to GUI
   tft.textSetCursor(10, 10); // tft.setCursor(X_axis, Y_axis); 
@@ -394,4 +370,18 @@ void ParseData() {      // split the data into its parts
 
     strtokIndx = strtok(NULL, ",");
     travelSpeed = (int) atof(strtokIndx);     // convert this part to a signed int
+}
+
+void debugPrint(void){
+  Serial.print(millis() / 1000.0);
+  Serial.print(",");
+  Serial.print(travelSpeedPID);
+  Serial.print(",");
+  Serial.print(currentForce);
+  Serial.print(",");
+  Serial.print(desiredForce);
+  Serial.print(",");
+  Serial.print(m1_pos);
+  Serial.print(",");
+  Serial.println(m2_pos);
 }
