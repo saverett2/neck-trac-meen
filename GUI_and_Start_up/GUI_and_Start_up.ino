@@ -287,7 +287,7 @@ void ContinueBack(){
       tft.textSetCursor(100, 100); // THIS NEEDS TO CHANGE TO BE NEXT TO THE TOP BUTTON****
       tft.textTransparent(RA8875_WHITE); // GUI white text
       tft.textWrite(continueString); // Print on GUI
-      tft.textSetCursor(100, 100); // THIS NEEDS TO CHANGE TO BE NEXT TO THE Middle BUTTON****
+      tft.textSetCursor(300, 100); // THIS NEEDS TO CHANGE TO BE NEXT TO THE Middle BUTTON****
       // Show "Back" text next to middle button to switch to previous case
       tft.textTransparent(RA8875_WHITE); // GUI white text
       tft.textWrite(backString); // Print on GUI
