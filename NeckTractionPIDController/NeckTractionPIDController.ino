@@ -28,8 +28,9 @@ const int potPinR2 = 6; // Analog pin 14 for the right motor, device 2
 const int loadcellDOUT = 14; // Load Cell
 const int loadcellSCK = 15; // Load Cell
 // Dial Pins
-const int forceDialPin = 4; //For Dial Button?
-Encoder forceDial(18, 19);
+//
+//
+//
 
 // Button Pins
 const int topButtonPin = 5;
@@ -73,12 +74,14 @@ double pidOUT;
 double m1_pos = 0;
 double m2_pos = 0;
 // Intial Value needed to set force to make motors run
-int setForce = 0;
+int setForce = 1;
 int CaseValMain = 1;
 //time variables
 unsigned long t_ms = 0;
 double t = 0;                   //current time
 double t_old = 0;               //previous encoder time
+int fillBlack = 1;
+double initialForce = 0;
 
 HX711 loadcell;
 float calibrationFactor = -23550.f; // Found experimentally with Merryweather's load cell
@@ -97,14 +100,26 @@ PID myPID(&currentForce, &travelSpeedPID, &desiredForce, Kp, Ki, Kd, DIRECT);
 void setup() {
   Serial.begin(9600);
 
+  //Initialize Pin Modes Buttons
+  pinMode(topButtonPin, INPUT_PULLUP);
+  pinMode(midButtonPin, INPUT_PULLUP);
+  pinMode(bottomButtonPin, INPUT_PULLUP);
+
   // Look for Display
   // This should be commented out if there are problems with the motor
-  / if (!tft.begin(RA8875_800x480)) {
+  if (!tft.begin(RA8875_800x480)) {
     Serial.println("RA8875 Not Found!");
     while (1);
+    ////////////////////////////////
   }
+  // Setup Encoder for Dial
+  setupEncoder();
 
+
+  // Exit Safe Start
+  Serial.println("Start Exit Safe Start");
   void exitSafeStart(uint8_t smcDeviceNumber);
+  Serial.println("End Exit Safe Start");
   Wire.begin();
   exitSafeStart(smcDeviceNumberL1); // Disable safe start and allow the motors to move
   exitSafeStart(smcDeviceNumberR2);
@@ -112,18 +127,13 @@ void setup() {
 
   // Start the GUI display screen
   StartGuiDisplay();
+  Serial.println("StartGUI");
 
-  // Load Cell Code
-  //Serial.print("Taring force sensor...");
-  loadcell.begin(loadcellDOUT, loadcellSCK);
-  loadcell.set_scale(calibrationFactor);
-  loadcell.tare(); // Number of times to average, blocking call
-  //Serial.println("done");
-
+  Serial.println("Start Warnings");
   runStartWarnings(); // Goes through a safety check, found in GUI_Code
 
   // Set up Display to print Desired and Current Force
-  tft.textMode();
+
   delay(1000);
   tft.fillScreen(RA8875_BLACK);
   tft.textEnlarge(2);
@@ -133,7 +143,7 @@ void setup() {
 
   myPID.SetMode(MANUAL); // Turn on PID controller
   myPID.SetOutputLimits(-25, 25);
-  myPID.SetSampleTime(100);
+  myPID.SetSampleTime(100); // If the loop is faster than the sample time it
   //Serial.print("time,");
   //Serial.print("travel Speed,");
   //Serial.print("current force,");
@@ -158,7 +168,7 @@ void loop() {
   //                           <Drive Both,-50,-50> // This input in serial monitor retracts motors back
 
   // Code needed to read inputs from serial monitor
-  RecvWithStartEndMarkers(); // Read data from serial monitor
+  //RecvWithStartEndMarkers(); // Read data from serial monitor
 
   // Check if load cell is ready to give measurement
   if (loadcell.is_ready()) {
@@ -174,72 +184,102 @@ void loop() {
   {
     case 1:
       // Change to Desired Force
+      Serial.println("We are in Main Case 1");
       tft.textSetCursor(10, 100 + 480 * 2 / 3);
       tft.textWrite("Desired Force: ");
       tft.textSetCursor(360, 100 + 480 * 2 / 3);
-      printValue(currentForce);// This doesnt make sense...
-      delay(10); //Why delay?
+      printValue(setForce);//
+
 
       //Read dial
-      int desiredForce = forceDial.read(); // Replace with InterruptRotator Code for smoother dial readings
+      //int desiredForce = forceDial.read(); // Replace with InterruptRotator Code for smoother dial readings
       //check change in force input
       if (desiredForce != setForce) {
-        setForceCommand(desiredForce);
+        setForceCommand();
+      }
+      if (desiredForce == setForce) {
+        CaseValMain = 2;
       }
       break;
 
     case 2: // Additional Cases can be added to add progressive checks to stop motors and ask for prompt to continue
       // Apply Set Force and Start Motors
-
+      Serial.println("We are in Main Case 2");
       // Show Current and Desired Force on Display
+
+      // Add the new load cell read out
       tft.textSetCursor(10, 100 + 480 * 2 / 3);
       tft.textWrite("Current Force: ");
       tft.textSetCursor(360, 100 + 480 * 2 / 3);
       printValue(currentForce);
       tft.textSetCursor(10, 100 + 480 * 1 / 3);
       tft.textWrite("Desired Force: ");
-      tft.textSetCursor(360, 100 + 480 * 2 / 3);
+      tft.textSetCursor(360, 100 + 480 * 1 / 3);
       printValue(setForce);
 
-      if (t < (t_old + 5)) {
-        travelSpeed = 50;
-        setSpeedBoth(travelSpeed);
-      }
-      else {
+      Serial.print("Before Desired Force ");
+      Serial.println(desiredForce);
+      Serial.print("Before Current Force");
+      Serial.println(currentForce);
+      myPID.SetMode(AUTOMATIC);
+      Serial.print("After Desired Force ");
+      Serial.println(desiredForce);
+      Serial.print("After Current Force");
+      Serial.println(currentForce);
+      
+      if (currentForce >= desiredForce) {
+        Serial.println("STOP MOTOR");
+        myPID.SetMode(MANUAL);
         stopBoth();
         CaseValMain = 3;
-        int fillBlack = 1;
+        break;
       }
+      break;
+
+    /*if (t < (t_old + 5)) {
+      travelSpeed = 25;
+      setSpeedBoth(travelSpeed); // Activate the motors at 25, for 5 seconds
+      }
+      else {
+      stopBoth(); // Stop both motors
+      CaseValMain = 3;
+      }
+      break;
+    */
     case 3:
       // End of Demo
+      Serial.println("We are in Main Case 3");
       if (fillBlack == 1) {
         tft.fillScreen(RA8875_BLACK);
         fillBlack = 0;
       }
       tft.textSetCursor(10, 100 + 480 * 2 / 3);
-      tft.textWrite("Demo is complete. Reset ");
+      tft.textWrite("Reached Desired Force. Reset when ready ");
       tft.textSetCursor(600, 100 + 480 * 0 / 3);
       tft.textTransparent(RA8875_WHITE);
       tft.textWrite("Reset");
-      buttonTopState = digitalRead(topButtonPin); // Should we move this to the front of the void loop?
-      if (buttonTopState == HIGH) {
+
+      buttonTopState = digitalRead(topButtonPin);
+      while (buttonTopState == 1)
+      {
+        //Wait until the top button is pushed
+        buttonTopState = digitalRead(topButtonPin);
+        //Serial.println(buttonTopState);
+        Serial.println("Waiting for Top Button to be Pushed 2");
+      }
+      while (buttonTopState != 1) {
+        buttonTopState = digitalRead(topButtonPin);
         CaseValMain = 4;
         t_old = t;
-        break;
+        Serial.println("Wh are in the waiting part of case 2");
       }
       break;
 
     case 4:
       // reset linear actuators
-      if (t<t_old+5){
-        travelSpeed = -50;
-        setSpeedBoth(travelSpeed);
-      }
-      else {
-        stopBoth();
-      }
-      return;
-      //
+
+      travelSpeed = -50;
+      setSpeedBoth(travelSpeed);
   }
 
   // Only used for PID Calibration
