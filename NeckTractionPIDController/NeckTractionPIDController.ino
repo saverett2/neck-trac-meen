@@ -24,9 +24,10 @@
 // Motor Pins
 const int potPinL1 = 7; // Analog pin 13 for the left motor, device 1
 const int potPinR2 = 6; // Analog pin 14 for the right motor, device 2
+
 // Load Cell Pins
-const int loadcellDOUT = 14; // Load Cell
-const int loadcellSCK = 15; // Load Cell
+const int loadcellDOUT = 11; // Load Cell
+const int loadcellSCK = 12; // Load Cell
 // Dial Pins
 //
 //
@@ -99,6 +100,11 @@ PID myPID(&currentForce, &travelSpeedPID, &desiredForce, Kp, Ki, Kd, DIRECT);
 
 void setup() {
   Serial.begin(9600);
+//while(1==1)
+//{
+//  setMotorSpeed(smcDeviceNumberL1, 50); 
+//  setMotorSpeed(smcDeviceNumberR2, 50);   
+//}
 
   //Initialize Pin Modes Buttons
   pinMode(topButtonPin, INPUT_PULLUP);

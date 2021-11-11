@@ -55,13 +55,13 @@ void printForceChangeMessage(int oldValue, int newValue){
   //print top button message
   tft.textColor(RA8875_WHITE, RA8875_BLACK);
   tft.textSetCursor(640,50);//tft.textSetCursor(640,50+480*0/3);
-  tft.textWrite("Cancel");
+  tft.textWrite("Set");
   
   //print bottom button message
   tft.textSetCursor(670,50+480*2/3);
-  tft.textWrite("Set");
-  tft.textSetCursor(640,100+480*2/3);
-  tft.textWrite("Weight");
+  tft.textWrite("Cancel");
+  //tft.textSetCursor(640,100+480*2/3);
+  //tft.textWrite("Weight");
 }//end printForceChangeMessage function
 
 void printValue(float values){

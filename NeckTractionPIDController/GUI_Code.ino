@@ -45,12 +45,11 @@ void runStartWarnings() {
       Serial.println("done");
       // If function is outputing 0 values consistently the load cell is not connected properly
       Serial.println(loadcell.is_ready());
-      while (loadcell.is_ready()) {
+      while (!loadcell.is_ready()) {
         tft.textSetCursor(10, 480 * 2 / 3);
         tft.textColor(RA8875_WHITE, RA8875_BLACK); // White Text, in black box
         tft.textWrite("Warning: Force sensor not connected properly"); // Print on GUI
         Serial.println("Load cell is not connected");
-        break;
       }
       Serial.println("Load cell is connected");
       //loadcell.tare(); // Number of times to average, blocking call
