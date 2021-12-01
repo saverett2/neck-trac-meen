@@ -1,0 +1,24 @@
+Emergency stop all movement 
+Then have a reset button if we want it to be reset. 
+Maybe add a pause button 
+Force and position always shown ,even at startup, 
+maybe change color of the pounds. To stand out more. 
+Loadcell measure absolute force instead of difference if possible, (tare before any load)
+Machine new joint holder things
+Continue on top is fine. 
+Hard incremental scroll wheel
+Back button on the start up warnigns
+add data recording of the force over time
+Usb port would be better than sd reader
+data: force time; position time; date time; auto generate graph on the data storage if possible
+Display graph on screen during with a button selection and a button at the end to review data 
+
+Good profile for UI design, very intuitive, smooth process,
+
+Long term, doctor entered a competition and is already looking at logistics of a human trial. 
+
+next meeting time, 
+Wants to do practice presentaton with docs. Not Friday the third, Wednesdays are bad. 
+
+new goal, not cadaver, 
+Goal: getting data storage for a packaged system
