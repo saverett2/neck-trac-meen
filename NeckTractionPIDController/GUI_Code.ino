@@ -39,6 +39,7 @@ void runStartWarnings() {
 
     case 1:
       // Load Cell Setup
+      ///////////////////////// Needs to be moved to the beginning set up.
       Serial.print("Setting up force sensor...");
       loadcell.begin(loadcellDOUT, loadcellSCK);
       loadcell.set_scale(calibrationFactor);
@@ -204,6 +205,26 @@ void ContinueBack() {
   tft.textWrite("Back"); // Print on GUI
 }
 
-float IIRFilter(float newValue, float oldValue, float alpha) {
-  return oldValue + newValue * alpha;
+void PauseContinue(){ // If the pauseButtonState == 0 move to this function and stop the device.
+  myPID.SetMode(MANUAL);
+  stopBoth();
+  while (pauseButtonState == 1){
+    // Read pause state and display load cell data continunally even when waiting
+    pauseButtonState = digitalRead(midButtonPin); // If needed: Switch button pin for what button is used as pause button
+    DisplayLoadCell();
+  }
+  while (pauseButtonState == 0){
+    pauseButtonState = digitalRead(midButtonPin); // If needed: Switch button pin for what button is used as pause button
+    // Wait until button press is released
+  }
+  // Start moving the device to the desiredForce. This could go back to the set Force Command function 
 }
+
+ void DisplayLoadCell(){ // This function displays the force in the top left corner. 
+  // This function must be called after load cell initialization. 
+  // Function to call in every loop to continually display the force detected from load cell
+      tft.textSetCursor(10, 100 + 480 * 2 / 3); // Needs to be moved to the top left corner
+      tft.textWrite("Current Force: ");
+      tft.textSetCursor(360, 100 + 480 * 2 / 3); // Needs to be aligned with the Text of Current Force
+      printValue(currentForce);
+ }

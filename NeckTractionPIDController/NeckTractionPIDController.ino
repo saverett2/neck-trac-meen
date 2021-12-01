@@ -195,24 +195,36 @@ void loop() {
       tft.textWrite("Desired Force: ");
       tft.textSetCursor(360, 100 + 480 * 2 / 3);
       printValue(setForce);//
-
-
+      
       //Read dial
       //int desiredForce = forceDial.read(); // Replace with InterruptRotator Code for smoother dial readings
       //check change in force input
-      if (desiredForce != setForce) {
+      if (desiredForce < setForce) {
         setForceCommand();
       }
-      if (desiredForce == setForce) {
+      if (desiredForce >= setForce) {
         CaseValMain = 2;
       }
       break;
 
     case 2: // Additional Cases can be added to add progressive checks to stop motors and ask for prompt to continue
+    
+    // The Main Course
+    
+    while(currentForce < desiredForce){
+// Pause/Unpause -  Stop Motor
+// Start Motor
+// Display Force Continue
+
+
+      
+    }
       // Apply Set Force and Start Motors
       Serial.println("We are in Main Case 2");
       // Show Current and Desired Force on Display
 
+/*    Could be replaced with 
+ *     
       // Add the new load cell read out
       tft.textSetCursor(10, 100 + 480 * 2 / 3);
       tft.textWrite("Current Force: ");
@@ -222,6 +234,8 @@ void loop() {
       tft.textWrite("Desired Force: ");
       tft.textSetCursor(360, 100 + 480 * 1 / 3);
       printValue(setForce);
+*/
+
 
       Serial.print("Before Desired Force ");
       Serial.println(desiredForce);
@@ -234,26 +248,16 @@ void loop() {
       Serial.println(currentForce);
       
       if (currentForce >= desiredForce) {
+        // Could change this out for the PauseContinue function
         Serial.println("STOP MOTOR");
         myPID.SetMode(MANUAL);
         stopBoth();
-        CaseValMain = 3;
+        CaseValMain = 3; // Send to the reset case.
         break;
       }
       break;
 
-    /*if (t < (t_old + 5)) {
-      travelSpeed = 25;
-      setSpeedBoth(travelSpeed); // Activate the motors at 25, for 5 seconds
-      }
-      else {
-      stopBoth(); // Stop both motors
-      CaseValMain = 3;
-      }
-      break;
-    */
     case 3:
-      // End of Demo
       Serial.println("We are in Main Case 3");
       if (fillBlack == 1) {
         tft.fillScreen(RA8875_BLACK);
@@ -261,7 +265,7 @@ void loop() {
       }
       tft.textSetCursor(10, 100 + 480 * 2 / 3);
       tft.textWrite("Reached Desired Force. Reset when ready ");
-      tft.textSetCursor(600, 100 + 480 * 0 / 3);
+      tft.textSetCursor(600, 50 + 480 * 0 / 3);
       tft.textTransparent(RA8875_WHITE);
       tft.textWrite("Reset");
 
@@ -271,21 +275,21 @@ void loop() {
         //Wait until the top button is pushed
         buttonTopState = digitalRead(topButtonPin);
         //Serial.println(buttonTopState);
-        Serial.println("Waiting for Top Button to be Pushed 2");
+        Serial.println("Waiting for Top Button MainCase3");
       }
       while (buttonTopState != 1) {
         buttonTopState = digitalRead(topButtonPin);
         CaseValMain = 4;
         t_old = t;
-        Serial.println("Wh are in the waiting part of case 2");
+        Serial.println("Waiting for Button push MainCase3");
       }
       break;
 
     case 4:
       // reset linear actuators
-
       travelSpeed = -50;
       setSpeedBoth(travelSpeed);
+      break;
   }
 
   // Only used for PID Calibration
