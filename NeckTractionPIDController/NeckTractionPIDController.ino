@@ -100,11 +100,11 @@ PID myPID(&currentForce, &travelSpeedPID, &desiredForce, Kp, Ki, Kd, DIRECT);
 
 void setup() {
   Serial.begin(9600);
-//while(1==1)
-//{
-//  setMotorSpeed(smcDeviceNumberL1, 50); 
-//  setMotorSpeed(smcDeviceNumberR2, 50);   
-//}
+  //while(1==1)
+  //{
+  //  setMotorSpeed(smcDeviceNumberL1, 50);
+  //  setMotorSpeed(smcDeviceNumberR2, 50);
+  //}
 
   //Initialize Pin Modes Buttons
   pinMode(topButtonPin, INPUT_PULLUP);
@@ -169,20 +169,18 @@ void loop() {
   //m2_pos = (float(analogRead(potPinM2)) - 32) * 150 / 840;
   //desiredForce = analogRead(potPinContr) / 1024.0 * 200.0; //TEMPORARY TO COLLECT DATA
 
-
   // Inputs to Serial Monitor: <Drive Both,50,50>  // This input in serial monitor drives motors forward
   //                           <Drive Both,-50,-50> // This input in serial monitor retracts motors back
 
   // Code needed to read inputs from serial monitor
   //RecvWithStartEndMarkers(); // Read data from serial monitor
 
-  // Check if load cell is ready to give measurement
-  if (loadcell.is_ready()) {
-    byte times = 5;
-    currentForce = loadcell.get_units();
-    Serial.println(loadcell.get_units());
-    Serial.println(currentForce);
-  }
+
+  // Check if load cell is ready to give measurement and display measurement
+  UpdateCurrentForce(); 
+
+
+
 
 
 
@@ -195,7 +193,7 @@ void loop() {
       tft.textWrite("Desired Force: ");
       tft.textSetCursor(360, 100 + 480 * 2 / 3);
       printValue(setForce);//
-      
+
       //Read dial
       //int desiredForce = forceDial.read(); // Replace with InterruptRotator Code for smoother dial readings
       //check change in force input
@@ -208,33 +206,33 @@ void loop() {
       break;
 
     case 2: // Additional Cases can be added to add progressive checks to stop motors and ask for prompt to continue
-    
-    // The Main Course
-    
-    while(currentForce < desiredForce){
-// Pause/Unpause -  Stop Motor
-// Start Motor
-// Display Force Continue
+
+      // The Main Course
+
+      while (currentForce < desiredForce) {
+        // Pause/Unpause -  Stop Motor
+        // Start Motor
+        // Display Force Continue
 
 
-      
-    }
+
+      }
       // Apply Set Force and Start Motors
       Serial.println("We are in Main Case 2");
       // Show Current and Desired Force on Display
 
-/*    Could be replaced with 
- *     
-      // Add the new load cell read out
-      tft.textSetCursor(10, 100 + 480 * 2 / 3);
-      tft.textWrite("Current Force: ");
-      tft.textSetCursor(360, 100 + 480 * 2 / 3);
-      printValue(currentForce);
-      tft.textSetCursor(10, 100 + 480 * 1 / 3);
-      tft.textWrite("Desired Force: ");
-      tft.textSetCursor(360, 100 + 480 * 1 / 3);
-      printValue(setForce);
-*/
+      /*    Could be replaced with
+
+            // Add the new load cell read out
+            tft.textSetCursor(10, 100 + 480 * 2 / 3);
+            tft.textWrite("Current Force: ");
+            tft.textSetCursor(360, 100 + 480 * 2 / 3);
+            printValue(currentForce);
+            tft.textSetCursor(10, 100 + 480 * 1 / 3);
+            tft.textWrite("Desired Force: ");
+            tft.textSetCursor(360, 100 + 480 * 1 / 3);
+            printValue(setForce);
+      */
 
 
       Serial.print("Before Desired Force ");
@@ -246,7 +244,7 @@ void loop() {
       Serial.println(desiredForce);
       Serial.print("After Current Force");
       Serial.println(currentForce);
-      
+
       if (currentForce >= desiredForce) {
         // Could change this out for the PauseContinue function
         Serial.println("STOP MOTOR");

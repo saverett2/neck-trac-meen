@@ -18,6 +18,7 @@ void runStartWarnings() {
   tft.textColor(RA8875_WHITE, RA8875_BLACK);
   tft.textSetCursor(10, 480 * 1 / 2);
   tft.textWrite("Welcome to Neck Traction!");
+  ContinueBack();
 
   buttonTopState = digitalRead(topButtonPin);
   while (buttonTopState == 1)
@@ -53,7 +54,8 @@ void runStartWarnings() {
         Serial.println("Load cell is not connected");
       }
       Serial.println("Load cell is connected");
-      //loadcell.tare(); // Number of times to average, blocking call
+      // Tongs should not be attached yet
+      loadcell.tare(); // Number of times to average, blocking call
       tft.fillScreen(RA8875_BLACK);
       tft.textSetCursor(10, 480 * 1 / 2);
       tft.textColor(RA8875_WHITE, RA8875_BLACK); // GUI white text
@@ -70,6 +72,7 @@ void runStartWarnings() {
         buttonTopState = digitalRead(topButtonPin);
         //Serial.println(buttonTopState);
         Serial.println("Waiting for Top Button to be Pushed 1");
+        UpdateCurrentForce();
       }
       while (buttonTopState != 1) {
         buttonTopState = digitalRead(topButtonPin);
@@ -95,6 +98,7 @@ void runStartWarnings() {
         buttonTopState = digitalRead(topButtonPin);
         //Serial.println(buttonTopState);
         Serial.println("Waiting for Top Button to be Pushed 2");
+        UpdateCurrentForce();
       }
       while (buttonTopState != 1) {
         buttonTopState = digitalRead(topButtonPin);
@@ -119,6 +123,7 @@ void runStartWarnings() {
         buttonTopState = digitalRead(topButtonPin);
         //Serial.println(buttonTopState);
         Serial.println("Waiting for Top Button to be Pushed 3");
+        UpdateCurrentForce();
       }
       while (buttonTopState != 1) {
         buttonTopState = digitalRead(topButtonPin);
@@ -148,6 +153,7 @@ void runStartWarnings() {
         buttonTopState = digitalRead(topButtonPin);
         //Serial.println(buttonTopState);
         Serial.println("Waiting for Top Button to be Pushed 4");
+        UpdateCurrentForce();
       }
       while (buttonTopState != 1) {
         buttonTopState = digitalRead(topButtonPin);
@@ -163,7 +169,7 @@ void runStartWarnings() {
       tft.textEnlarge(2);
       tft.textSetCursor(10, 480 * 1 / 2);
       tft.textColor(RA8875_WHITE, RA8875_BLACK); // GUI white text
-      tft.textWrite("Thank you for checking the device"); // Print on GUI
+      tft.textWrite("Device is ready: Press Continue to Begin"); // Print on GUI
 
       // function to display "Continue and Back"
       ContinueBack();
@@ -176,6 +182,7 @@ void runStartWarnings() {
         buttonTopState = digitalRead(topButtonPin);
         //Serial.println(buttonTopState);
         Serial.println("Waiting for Top Button to be Pushed 5");
+        UpdateCurrentForce();
       }
       while (buttonTopState != 1) {
         buttonTopState = digitalRead(topButtonPin);
@@ -219,12 +226,3 @@ void PauseContinue(){ // If the pauseButtonState == 0 move to this function and 
   }
   // Start moving the device to the desiredForce. This could go back to the set Force Command function 
 }
-
- void DisplayLoadCell(){ // This function displays the force in the top left corner. 
-  // This function must be called after load cell initialization. 
-  // Function to call in every loop to continually display the force detected from load cell
-      tft.textSetCursor(10, 100 + 480 * 2 / 3); // Needs to be moved to the top left corner
-      tft.textWrite("Current Force: ");
-      tft.textSetCursor(360, 100 + 480 * 2 / 3); // Needs to be aligned with the Text of Current Force
-      printValue(currentForce);
- }
