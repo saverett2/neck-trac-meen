@@ -213,7 +213,7 @@ void loop() {
       while (currentForce < desiredForce) {
         // Pause/Unpause -  Stop Motor
         if (buttonMidState == HIGH){
-          pauseMovement();
+          PauseContinue();
         }
         // Start Motor
         // Display Force Continue
