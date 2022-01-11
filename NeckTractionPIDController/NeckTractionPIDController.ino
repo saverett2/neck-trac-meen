@@ -208,13 +208,9 @@ void loop() {
     case 2: // Additional Cases can be added to add progressive checks to stop motors and ask for prompt to continue
 
       // The Main Course
-      displayPauseButton();
 
       while (currentForce < desiredForce) {
         // Pause/Unpause -  Stop Motor
-        if (buttonMidState == HIGH){
-          PauseContinue();
-        }
         // Start Motor
         // Display Force Continue
 

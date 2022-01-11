@@ -212,16 +212,10 @@ void ContinueBack() {
   tft.textWrite("Back"); // Print on GUI
 }
 
-void displayPauseButton(void){
- // Show Continue Text Next to top button to switch to next case
-      tft.textSetCursor(600, 50 + 480 * 2 / 3); // THIS NEEDS TO CHANGE TO BE NEXT TO THE TOP BUTTON
-      tft.textColor(RA8875_WHITE, RA8875_BLACK); // GUI white text
-      tft.textWrite("Pause/Play"); // Print on GUI
-}
-
 void PauseContinue(){ // If the pauseButtonState == 0 move to this function and stop the device.
   myPID.SetMode(MANUAL);
   stopBoth();
+  
   while (pauseButtonState == 1){
     // Read pause state and display load cell data continunally even when waiting
     pauseButtonState = digitalRead(midButtonPin); // If needed: Switch button pin for what button is used as pause button
