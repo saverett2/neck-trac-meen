@@ -82,8 +82,8 @@ void UpdateCurrentForce() {
   if (loadcell.is_ready()) {
     byte times = 5;
     currentForce = loadcell.get_units();
-    Serial.println(loadcell.get_units());
-    Serial.println(currentForce);
+    //Serial.println(loadcell.get_units());
+    //Serial.println(currentForce);
     tft.textSetCursor(10, 100 + 480 * 2 / 3); // Needs to be moved to the top left corner
     tft.textWrite("Current Force: ");
     tft.textSetCursor(360, 100 + 480 * 2 / 3); // Needs to be aligned with the Text of Current Force

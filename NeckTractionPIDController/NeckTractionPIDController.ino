@@ -43,6 +43,11 @@ boolean buttonTopState = 0;  // variable for reading the pushbutton status
 boolean buttonMidState = 0;
 boolean buttonBottomState = 0;
 
+// LED Pins
+//const int TopLED =
+//const int MidLED =
+//const int BotLED =
+
 
 // Define device numbers
 bool newOrders = false;
@@ -74,6 +79,16 @@ double oldError = 0; // Old error for PID (lb)
 double pidOUT;
 double m1_pos = 0;
 double m2_pos = 0;
+
+// Warning Start up Sequence Global Varibables
+int lastButtonStateTop = 1;// Needs to go into global variables
+int lastButtonStateBot = 1;//
+unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
+unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
+
+int CaseValStart  = constrain(CaseValStart, 1, 6); // Constrain the varibles to case 1 to 6, change if additional warnings are added.
+
+
 // Intial Value needed to set force to make motors run
 int setForce = 1;
 int CaseValMain = 1;
@@ -107,9 +122,14 @@ void setup() {
   //}
 
   //Initialize Pin Modes Buttons
-  pinMode(topButtonPin, INPUT_PULLUP);
+  pinMode(topButtonPin,INPUT);
   pinMode(midButtonPin, INPUT_PULLUP);
   pinMode(bottomButtonPin, INPUT_PULLUP);
+
+  // intialize LED Pin Mode
+  //pinMode(TopLED, OUTPUT);
+  //pinMode(MidLED, OUTPUT);
+  //pinMode(BotLED, OUTPUT);
 
   // Look for Display
   // This should be commented out if there are problems with the motor
@@ -177,7 +197,7 @@ void loop() {
 
 
   // Check if load cell is ready to give measurement and display measurement
-  UpdateCurrentForce(); 
+  UpdateCurrentForce();
 
 
 
@@ -208,9 +228,13 @@ void loop() {
     case 2: // Additional Cases can be added to add progressive checks to stop motors and ask for prompt to continue
 
       // The Main Course
+      displayPauseButton();
 
       while (currentForce < desiredForce) {
         // Pause/Unpause -  Stop Motor
+        if (buttonMidState == HIGH) {
+          PauseContinue();
+        }
         // Start Motor
         // Display Force Continue
 
