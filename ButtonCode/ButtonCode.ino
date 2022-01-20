@@ -26,7 +26,7 @@ void loop(){
 int buttonCode(void){
   bool prevButtonTopState, prevButtonMidState, prevButtonBottomState = LOW;
   bool bottomClick, midClick, topClick = LOW;
-  while (topClick || midClick || bottomClick){
+  while( 1==1 ){
     if ( prevButtonTopState != digitalRead(topButtonPin) ){
       return topButtonPin;
     }else if ( prevButtonMidState != digitalRead(midButtonPin) ){
