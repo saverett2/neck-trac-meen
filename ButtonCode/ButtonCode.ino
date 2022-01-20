@@ -25,7 +25,7 @@ void loop(){
 //Returns the pin of the button that was clicked. 
 int buttonCode(void){
   bool prevButtonTopState, prevButtonMidState, prevButtonBottomState = LOW;
-  bool bottomClick, midClick, topClick = LOW;
+  
   while( 1==1 ){
     if ( prevButtonTopState != digitalRead(topButtonPin) ){
       return topButtonPin;
