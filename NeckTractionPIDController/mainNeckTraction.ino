@@ -10,7 +10,7 @@ void setForceCommand() {
 
   int forceDialInput = readForceDial();// This is reading the dial, should be changed to the new encoderShort function
 
-  while (buttonTopState == 1) { //&&  buttonBottomState == 1){
+  while (buttonTopState == 1){ //&&  (buttonBottomState == 1)) {
     //update desiredForce if it changes
     //Serial.println("We are in the while loop Force Command");
 
@@ -20,7 +20,7 @@ void setForceCommand() {
       desiredForce = forceDialInput;
       printForceChangeMessage(setForce, desiredForce);
     }
-    buttonTopState = digitalRead(topButtonPin);
+    buttonTopState = digitalRead(topButtonPin); // SET
     buttonBottomState = digitalRead(bottomButtonPin);
   }
   //if selected cancelled
@@ -52,10 +52,16 @@ void printForceChangeMessage(int oldValue, int newValue) {
   printValue(newValue);
   tft.textWrite(" lbs?");
 
-  //print top button message
+  //print top button message (Set Weight)
   tft.textColor(RA8875_WHITE, RA8875_BLACK);
   tft.textSetCursor(640, 50); //tft.textSetCursor(640,50+480*0/3);
   tft.textWrite("Set");
+
+//print middle button message (Pause)
+  tft.textSetCursor(600, 50 + 480 * 2 / 3); // THIS NEEDS TO CHANGE TO BE NEXT TO THE TOP BUTTON
+  tft.textColor(RA8875_WHITE, RA8875_BLACK); // GUI white text
+  tft.textWrite("Pause"); // Print on GUI
+  
 
   //print bottom button message
   tft.textSetCursor(670, 50 + 480 * 2 / 3);

@@ -43,10 +43,10 @@ boolean buttonTopState = 0;  // variable for reading the pushbutton status
 boolean buttonMidState = 0;
 boolean buttonBottomState = 0;
 
-// LED Pins
-//const int TopLED =
-//const int MidLED =
-//const int BotLED =
+// Button LED Pins
+const int TopLED = 31;
+const int MidLED = 32;
+const int BotLED = 33;
 
 
 // Define device numbers
@@ -86,6 +86,12 @@ int lastButtonStateBot = 1;//
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
+int readingTop = 1;
+int readingMid = 1;
+int readingBot = 1;
+
+int previousDisplayed = 1;
+int previousCas = 1;
 int CaseValStart  = constrain(CaseValStart, 1, 6); // Constrain the varibles to case 1 to 6, change if additional warnings are added.
 
 
@@ -113,6 +119,12 @@ uint16_t tx, ty;
 // Creat PID object
 PID myPID(&currentForce, &travelSpeedPID, &desiredForce, Kp, Ki, Kd, DIRECT);
 
+
+
+// ************************* void setup *************************
+
+
+
 void setup() {
   Serial.begin(9600);
   //while(1==1)
@@ -122,14 +134,14 @@ void setup() {
   //}
 
   //Initialize Pin Modes Buttons
-  pinMode(topButtonPin,INPUT);
+  pinMode(topButtonPin, INPUT_PULLUP);
   pinMode(midButtonPin, INPUT_PULLUP);
   pinMode(bottomButtonPin, INPUT_PULLUP);
 
   // intialize LED Pin Mode
-  //pinMode(TopLED, OUTPUT);
-  //pinMode(MidLED, OUTPUT);
-  //pinMode(BotLED, OUTPUT);
+  pinMode(TopLED, OUTPUT);
+  pinMode(MidLED, OUTPUT);
+  pinMode(BotLED, OUTPUT);
 
   // Look for Display
   // This should be commented out if there are problems with the motor
@@ -181,6 +193,12 @@ void setup() {
 
 }
 
+
+
+// ************************* void loop *************************
+
+
+
 void loop() {
   t_ms = micros();
   t = t_ms / 1000000.0;
@@ -191,74 +209,82 @@ void loop() {
 
   // Inputs to Serial Monitor: <Drive Both,50,50>  // This input in serial monitor drives motors forward
   //                           <Drive Both,-50,-50> // This input in serial monitor retracts motors back
-
   // Code needed to read inputs from serial monitor
   //RecvWithStartEndMarkers(); // Read data from serial monitor
-
 
   // Check if load cell is ready to give measurement and display measurement
   UpdateCurrentForce();
 
 
-
-
-
-
   switch (CaseValMain)
   {
-    case 1:
-      // Change to Desired Force
-      Serial.println("We are in Main Case 1");
-      tft.textSetCursor(10, 100 + 480 * 2 / 3);
-      tft.textWrite("Desired Force: ");
-      tft.textSetCursor(360, 100 + 480 * 2 / 3);
-      printValue(setForce);//
 
-      //Read dial
-      //int desiredForce = forceDial.read(); // Replace with InterruptRotator Code for smoother dial readings
-      //check change in force input
+    case 1:
+
       if (desiredForce < setForce) {
         setForceCommand();
       }
-      if (desiredForce >= setForce) {
-        CaseValMain = 2;
-      }
       break;
+
+
+
 
     case 2: // Additional Cases can be added to add progressive checks to stop motors and ask for prompt to continue
 
       // The Main Course
-      displayPauseButton();
-
-      while (currentForce < desiredForce) {
-        // Pause/Unpause -  Stop Motor
-        if (buttonMidState == HIGH) {
-          PauseContinue();
-        }
-        // Start Motor
-        // Display Force Continue
 
 
+      //////// READING BUTTON CODE START
+      // Read Button Input
+      readingTop = digitalRead(topButtonPin);
+      readingMid = digitalRead(midButtonPin);
+      readingBot = digitalRead(bottomButtonPin);
 
+      // Three buttons are lit up
+      digitalWrite(TopLED, HIGH);
+      digitalWrite(MidLED, HIGH);
+      digitalWrite(BotLED, HIGH);
+
+      // If the switch changed, due to noise or pressing:
+      if ((readingMid != lastButtonStateTop) || (readingBot !=  lastButtonStateBot)) {
+        // reset the debouncing timer
+        lastDebounceTime = millis();
       }
+
+      // millis time delay
+      if ((millis() - lastDebounceTime) > debounceDelay) {
+        // whatever the reading is at, it's been there for longer than the debounce
+        // delay, so take it as the actual current state:
+
+        // if the button state has changed:
+        if ((readingTop != buttonTopState) || (readingBot != buttonBottomState) || (readingMid != buttonMidState)) {
+          buttonTopState = readingTop;
+          buttonBottomState = readingBot;
+          buttonMidState = readingMid;
+
+          // If mid button is pushed then pause, send back to case 1 to change desired force
+          if ((buttonMidState == 0) && (buttonBottomState == 1)) {
+            Serial.println("STOP MOTOR");
+            myPID.SetMode(MANUAL);
+            stopBoth();
+            CaseValMain = 1;
+            
+          }
+          // If bottom button is pushed, reset the system, send to case 3
+          if ((buttonBottomState == 0) && ( buttonMidState == 1)) {
+            Serial.println("STOP MOTOR");
+            myPID.SetMode(MANUAL);
+            stopBoth();
+            CaseValMain = 3;
+            //ledState = !ledState;
+          }
+        }
+      }
+      ///////// READ BUTTON CODE END
+
       // Apply Set Force and Start Motors
       Serial.println("We are in Main Case 2");
       // Show Current and Desired Force on Display
-
-      /*    Could be replaced with
-
-            // Add the new load cell read out
-            tft.textSetCursor(10, 100 + 480 * 2 / 3);
-            tft.textWrite("Current Force: ");
-            tft.textSetCursor(360, 100 + 480 * 2 / 3);
-            printValue(currentForce);
-            tft.textSetCursor(10, 100 + 480 * 1 / 3);
-            tft.textWrite("Desired Force: ");
-            tft.textSetCursor(360, 100 + 480 * 1 / 3);
-            printValue(setForce);
-      */
-
-
       Serial.print("Before Desired Force ");
       Serial.println(desiredForce);
       Serial.print("Before Current Force");
@@ -274,36 +300,68 @@ void loop() {
         Serial.println("STOP MOTOR");
         myPID.SetMode(MANUAL);
         stopBoth();
-        CaseValMain = 3; // Send to the reset case.
+        CaseValMain = 1; // Send back to change force and wait until new force is set
         break;
       }
       break;
 
+
     case 3:
       Serial.println("We are in Main Case 3");
+
+      // Why do we have this IF statement?
       if (fillBlack == 1) {
         tft.fillScreen(RA8875_BLACK);
         fillBlack = 0;
       }
-      tft.textSetCursor(10, 100 + 480 * 2 / 3);
-      tft.textWrite("Reached Desired Force. Reset when ready ");
-      tft.textSetCursor(600, 50 + 480 * 0 / 3);
-      tft.textTransparent(RA8875_WHITE);
-      tft.textWrite("Reset");
+      if (previousDisplayed != 2) {
+        tft.textEnlarge(2);
+        tft.textSetCursor(10, 100 + 480 * 2 / 3);
+        tft.textWrite("Confirm you want to Reset. Press Reset Again ");
 
-      buttonTopState = digitalRead(topButtonPin);
-      while (buttonTopState == 1)
-      {
-        //Wait until the top button is pushed
-        buttonTopState = digitalRead(topButtonPin);
-        //Serial.println(buttonTopState);
-        Serial.println("Waiting for Top Button MainCase3");
+        tft.textSetCursor(600, 50 + 480 * 2 / 3); // Change position to match Bottom Button
+        tft.textTransparent(RA8875_WHITE);
+        tft.textWrite("Reset");
+
+
+        tft.textSetCursor(600, 50 + 480 * 1 / 3); // Change Position to match Middle Button
+        tft.textTransparent(RA8875_WHITE);
+        tft.textWrite("Cancel");
+        previousDisplayed = 2;
       }
-      while (buttonTopState != 1) {
-        buttonTopState = digitalRead(topButtonPin);
-        CaseValMain = 4;
-        t_old = t;
-        Serial.println("Waiting for Button push MainCase3");
+      // Read Either Reset Button for confirmation or Cancel to go back to case 1 to set force again.
+      // Read Button Input
+      readingTop = digitalRead(topButtonPin);
+      readingMid = digitalRead(midButtonPin);
+      readingBot = digitalRead(bottomButtonPin);
+
+      // If the switch changed, due to noise or pressing:
+      if ((readingMid != lastButtonStateTop) || (readingBot !=  lastButtonStateBot)) {
+        // reset the debouncing timer
+        lastDebounceTime = millis();
+      }
+      // millis time delay
+      if ((millis() - lastDebounceTime) > debounceDelay) {
+        // whatever the reading is at, it's been there for longer than the debounce
+        // delay, so take it as the actual current state:
+
+        // if the button state has changed:
+        if ((readingTop != buttonTopState) || (readingBot != buttonBottomState) || (readingMid != buttonMidState)) {
+          buttonTopState = readingTop;
+          buttonBottomState = readingBot;
+          buttonMidState = readingMid;
+
+          // If mid button is pushed then pause, send back to case 1 to change desired force
+          if ((buttonMidState == 0) && (buttonBottomState == 1)) {
+            CaseValMain = 1;
+            //
+          }
+          // If bottom button is pushed, reset the system, send to case 3
+          if ((buttonBottomState == 0) && ( buttonMidState == 1)) {
+            CaseValMain = 4;
+            //ledState = !ledState;
+          }
+        }
       }
       break;
 
@@ -311,8 +369,11 @@ void loop() {
       // reset linear actuators
       travelSpeed = -50;
       setSpeedBoth(travelSpeed);
+      // Need to code a way to reset the system after actuators have reached their starting points
       break;
   }
+
+
 
   // Only used for PID Calibration
   if (myPID.GetMode() == AUTOMATIC) {
