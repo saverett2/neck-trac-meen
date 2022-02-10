@@ -56,7 +56,7 @@ char message[32];
 char command[5];
 String commandString;
 uint16_t smcDeviceNumber;
-uint16_t smcDeviceNumberL1 = 1;
+uint16_t smcDeviceNumberL1 = 1;//Left is relative to standing at foot of surgery bed. Robot is on opposite side
 uint16_t smcDeviceNumberR2 = 2;
 double travelSpeed;
 double travelSpeedPID;
