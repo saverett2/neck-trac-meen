@@ -25,6 +25,7 @@ PID myPID(&currentForce, &travelSpeedPID, &desiredForce, Kp, Ki, Kd, DIRECT);
 
 //*********************************Functions*********************************//
 
+// sets up the pid to be used later
 void setupPID(void) {
   myPID.SetMode(MANUAL); // Turn on PID controller
   myPID.SetOutputLimits(-100, 100);
@@ -33,6 +34,7 @@ void setupPID(void) {
   // myPID.SetMode(AUTOMATIC); //TEMPORARY TO COLLECT DATA //TODO: check if this can be removed
 }
 
+// TODO: finish and tune this
 void updatePID(void){
   if (myPID.GetMode() == AUTOMATIC) {
     myPID.Compute(); // Compute with each loop

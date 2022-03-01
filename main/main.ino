@@ -17,6 +17,10 @@ void setup() {
   initializeButtonPins();
   initializeLEDPins();
 
+  //setup reset pin //you can click the pin on the mega's shield
+  digitalWrite(Resetpin, HIGH);
+  pinMode(Resetpin, OUTPUT);
+
   //check if display is connected to the board
   lookForDisplay();//this should be commented out if there are problems with the motor
 
@@ -36,7 +40,7 @@ void setup() {
   StartGuiDisplay();//sets up setting so we can write to the screen
   displayStartUpPage();
   //Display Buttons
-   displayContinue();
+  displayContinue();
   
 }//end setup()
 
