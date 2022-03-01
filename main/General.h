@@ -1,5 +1,13 @@
 //Probably rename this physical interface or something//TODO
 
+//reset Pin
+const int resetPin = 35;
+
+// Button LED Pins
+const int topLED = 31;
+const int midLED = 32;
+const int botLED = 33;
+
 // Button Pins
 const int topButtonPin = 5;
 const int midButtonPin = 6;
@@ -9,11 +17,6 @@ const int bottomButtonPin = 7;
 boolean buttonTopState = 0;  // variable for reading the pushbutton status
 boolean buttonMidState = 0;   //TODO: I think these should start as high
 boolean buttonBottomState = 0;
-
-// Button LED Pins
-const int topLED = 31;
-const int midLED = 32;
-const int botLED = 33;
 
 //set up serial communication
 uint16_t tx, ty;//TODO: move this to wherever Wire.h goes

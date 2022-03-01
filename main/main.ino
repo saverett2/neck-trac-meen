@@ -5,11 +5,6 @@
 #include "PIDStuff.h"
 #include "ControllerHelpers.h"
 
-//States of robot
-bool settingUpRobot = true;  //going through the startup sequence
-bool changingWeight = false; // in the process of setting and changing weight
-bool mainPage = false;       // main page that displays weight, nothing is moving or anything
-
 void setup() {
   Serial.begin(9600);
 
@@ -18,8 +13,8 @@ void setup() {
   initializeLEDPins();
 
   //setup reset pin //you can click the pin on the mega's shield
-  digitalWrite(Resetpin, HIGH);
-  pinMode(Resetpin, OUTPUT);
+  digitalWrite(resetPin, HIGH);
+  pinMode(resetPin, OUTPUT);
 
   //check if display is connected to the board
   lookForDisplay();//this should be commented out if there are problems with the motor
@@ -39,8 +34,6 @@ void setup() {
   //setup gui and start display
   StartGuiDisplay();//sets up setting so we can write to the screen
   displayStartUpPage();
-  //Display Buttons
-  displayContinue();
   
 }//end setup()
 
@@ -59,7 +52,7 @@ void loop() {
   if( settingUpRobot ) {
     setupWarningSequence();
 
-    /if device is no longer being set up, go to main page
+    //if device is no longer being set up, go to main page
     if ( !settingUpRobot ) { mainPage = true;}
   }
   
