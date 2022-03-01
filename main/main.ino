@@ -1,4 +1,5 @@
 #include "18v15G2Functions.h"
+#include "encoderShort.h"
 #include "General.h"
 #include "ForceSensor.h"
 #include "GUIAndDisplay.h"
@@ -46,7 +47,9 @@ void loop() {
     buttonTime = timeCurr;
     
     readButtons();
-  }//end button check
+  }else{
+    setButtonsOff();
+  }
 
   //if robot is still being set up 
   if( settingUpRobot ) {
@@ -57,11 +60,25 @@ void loop() {
   }
   
   //display current force in appropriate location //TODO: maybe put this first or in an if timer
-  updateCurrentForce();
+    //if time is ready and loadcell has been tared;
+  if ( (timeCurr - forceTime) > forceTimer && (!settingUpRobot || setupPageCase > 2) ){
+    //reset time til next force reading
+    forceTime = timeCurr;
+
+    //print current force to the gui
+    updateCurrentForce();
+  }
 
   if ( mainPage ){
-    if(topButtonSelected){  setupPageCase = setupPageCase + 1; }//move forward
-    if(botButtonSelected){   setupPageCase--; }//move backwards
+    //
+    if(topButtonSelected() ){  changingForce = true; }//move forward
+
+    //reset
+    if(botButtonSelected() ){   setupPageCase--; }//move backwards
+  }
+
+  if ( changingForce ) {
+    setForceCommand();
   }
 
   //reset the device

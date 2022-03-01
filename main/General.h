@@ -14,9 +14,9 @@ const int midButtonPin = 6;
 const int bottomButtonPin = 7;
 
 //Define State for Buttons
-boolean buttonTopState = 0;  // variable for reading the pushbutton status
-boolean buttonMidState = 0;   //TODO: I think these should start as high
-boolean buttonBottomState = 0;
+bool buttonTopState = 0;  // variable for reading the pushbutton status
+bool buttonMidState = 0;   //TODO: I think these should start as high
+bool buttonBottomState = 0;
 
 //set up serial communication
 uint16_t tx, ty;//TODO: move this to wherever Wire.h goes
@@ -25,9 +25,11 @@ uint16_t tx, ty;//TODO: move this to wherever Wire.h goes
 unsigned int timeCurr;
 unsigned int loadCellTimeOld;//TODO: maybe take out "old"
 unsigned int buttonTime;
+unsigned int forceTime;
 
 const int opAmpTimeout = 5000;//op amp times out in 5 seconds of inactivity
-const int buttonTimer = 500;//.5 sec
+const int buttonTimer = 150;//.15 sec
+const int forceTimer = 400;//.4 sec
 
 //TODO: Name this section
 byte setupPageCase = 0;//variable to track which startup sequence page we are on
@@ -45,37 +47,36 @@ void initializeButtonPins(void) {
 
 //reads the states of the buttons
 void readButtons(void) {
-  bool tops[20];
-  bool mids[20];
-  bool bots[20];
+  const int arraySize = 20;
+  
+  bool tops[arraySize];
+  bool mids[arraySize];
+  bool bots[arraySize];
 
-  for( int index = 0; index < 20; index++){
+  for( int index = 0; index < arraySize; index++){
     tops[index] = digitalRead(topButtonPin);
     mids[index] = digitalRead(midButtonPin);
     bots[index] = digitalRead(bottomButtonPin);
   }
 
-  int topSum = 0;
-  int midSum = 0;
-  int botSum = 0;
+  int topSum = 0, midSum = 0, botSum = 0;
 
-
-  for( int index = 0; index < 20; index++){
+  for( int index = 0; index < arraySize; index++){
     topSum = topSum + tops[index];
     midSum += mids[index];
     botSum += bots[index];
   }
 
-  buttonTopState = topSum/20; //TODO: verify this math works. truncation might make .9 = 0;?
-  buttonMidState = midSum/20;
-  buttonBottomState = botSum/20;
+  buttonTopState = topSum/arraySize; //TODO: verify this math works. truncation might make .9 = 0;?
+  buttonMidState = midSum/arraySize;
+  buttonBottomState = botSum/arraySize;
+}
 
-//  Serial.print("      top button: ");
-//  Serial.println(buttonTopState);
-//  Serial.print("mid button: ");
-//  Serial.println(buttonMidState);
-//  Serial.print("bot button: ");
-//  Serial.println(buttonBottomState);
+//set all buttons to an off state
+void setButtonsOff(void){
+  buttonTopState = 1;
+  buttonMidState = 1;
+  buttonBottomState = 1;
 }
 
 //returns if the top button was clicked

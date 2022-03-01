@@ -1,3 +1,9 @@
+//States of robot
+bool settingUpRobot = true;  //going through the startup sequence
+bool changingForce = false; // in the process of setting and changing force
+bool mainPage = false;       // main page that displays weight, nothing is moving or anything
+
+
 
 //check if op amp has timed out 
 void checkOpAmpTimeout(void){//TODO: make this code event driven without while loops
@@ -19,7 +25,7 @@ void tareLoadCell(void){
     displayLoadCellErrorMessage();
 
     //wait till loadcell is plugged in    }
-    while (!loadcell.is_ready()) { }
+    while (!loadcell.is_ready()) { Serial.println("bad cell"); }
   }//end if check
   
   //Tare/zero the loadcell
@@ -31,8 +37,8 @@ void tareLoadCell(void){
 // up the robot. 
 void setupWarningSequence(void){
   //check if any "continue" or "back" has been selected
-  if(topButtonSelected){  setupPageCase = setupPageCase + 1; }//move forward
-  if(botButtonSelected){   setupPageCase--; }//move backwards //TODO: confirm if this notation works
+  if( topButtonSelected() ){  setupPageCase = setupPageCase + 1; }//move forward
+  if( botButtonSelected() ){   setupPageCase--; }//move backwards //TODO: confirm if this notation works
   constrain(setupPageCase, 0, 6);//TODO: change the upper max
 
   //if button has been pressed to change the display screen, enter switch case. Otherwise skip it
@@ -94,6 +100,7 @@ void setupWarningSequence(void){
       case 6:
         //exits the starting up event
         settingUpRobot = false;
+        mainPage = true;
 
         //Display Buttons
         displayContinue();
@@ -110,7 +117,7 @@ void setupWarningSequence(void){
 //  If the loadcell is disconected, displays an error
 void updateCurrentForce(void) {
   //If loadcell isn't connected, display error
-  if ( !loadcell.is_ready() ) { displayLoadCellErrorMessage(); }
+  //while ( !loadcell.is_ready() ) { displayLoadCellErrorMessage(); }
 
   //read force
   byte times = 5; //reads times many times and gets the average
@@ -119,3 +126,38 @@ void updateCurrentForce(void) {
   //print to GUI
   displayForce( currentForce );//TODO: maybe make currentForce local
 }//end updateCurrentForce
+
+
+
+//TODO: this whole method
+void setForceCommand(void) {
+  tft.fillScreen(RA8875_BLACK);
+
+  //Serial.println("In set Force Command");
+  printForceChangeMessage(setForce, desiredForce);
+
+  readButtons();
+
+  int forceDialInput = readForceDial();// This is reading the dial, should be changed to the new encoderShort function
+
+  while ( !topButtonSelected && !botButtonSelected ) {
+    //update desiredForce if it changes;
+    forceDialInput = readForceDial(); // Reading the force dial continually
+
+    if (desiredForce != forceDialInput ) {
+      desiredForce = forceDialInput;
+      printForceChangeMessage(setForce, desiredForce);
+    }
+    readButtons();
+    
+    updateCurrentForce();
+  }
+  
+  //if selected cancelled
+  if ( botButtonSelected ) { // Reset Button
+    return;
+  }
+  //if selected continue or set
+  setForce = desiredForce;
+  //buttonBottomState = digitalRead(bottomButtonPin);
+}// end setForceCommands method

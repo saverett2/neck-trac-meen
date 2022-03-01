@@ -77,7 +77,8 @@ void printValue(float values) {
 
 //display's the current force onto the screen
 void displayForce(float currentForce){
-   //TODO: check if this output to the correct location
+  tft.textEnlarge(2);//size
+  //TODO: check if this output to the correct location
   tft.textColor(RA8875_WHITE, RA8875_BLACK);
   tft.textSetCursor(10, 100 + 480 * 2 / 3); // Needs to be moved to the top left corner//TODO:
   tft.textWrite("Current Force: ");
@@ -87,9 +88,8 @@ void displayForce(float currentForce){
 }
 
 //Displays "continue" next to the top button and turns the bottom top LED on
-void displayContinue() {
-  tft.textEnlarge(2);
-  // Show "Continue" text next to middle button to switch to previous case
+void displayContinue(void) {
+  // Show "Continue" text next to top button 
   tft.textEnlarge(2);//size
   tft.textColor(RA8875_WHITE, RA8875_BLACK); // white text with black background
   tft.textSetCursor(600, 50 + 480 * 0 / 3); // TODO: THIS NEEDS TO CHANGE TO BE NEXT TO THE TOP BUTTON****
@@ -142,6 +142,7 @@ void displayOpAmpTimeOutError(void){
 
 //display op amp waiting to connect message
 void displayOpAmpWaiting(void){
+  tft.fillScreen(RA8875_BLACK); // set the background the black
   tft.textEnlarge(4);
   tft.textSetCursor(100, 150);
   tft.textColor(RA8875_WHITE, RA8875_BLACK); // White Text, in black box
@@ -182,4 +183,79 @@ void displayDeviceReadyMessage(void){
   tft.textSetCursor(10, 480 * 1 / 2);
   tft.textColor(RA8875_WHITE, RA8875_BLACK); // GUI white text
   tft.textWrite("Device is ready: Press Continue to Begin"); // Print on GUI
+}
+
+//TODO: Clean up this method
+void printForceChangeMessage(int oldValue, int newValue) {
+  //set text size
+  tft.textEnlarge(2);
+
+  tft.textSetCursor(10, 150);
+  tft.textColor(RA8875_WHITE, RA8875_BLACK);
+  //print warning
+  tft.textWrite("Do you want to change");
+
+  tft.textSetCursor(10, 200);
+  tft.textColor(RA8875_WHITE, RA8875_BLACK);
+  tft.textWrite("the force from ");
+
+  tft.textSetCursor(10, 250);
+  tft.textColor(RA8875_WHITE, RA8875_BLACK);
+  printValue(oldValue);
+  tft.textWrite(" lbs, to ");
+  printValue(newValue);
+  tft.textWrite(" lbs?");
+
+  //print top button message (Set Weight)
+  tft.textColor(RA8875_WHITE, RA8875_BLACK);
+  tft.textSetCursor(650, 50); //tft.textSetCursor(640,50+480*0/3);
+  tft.textWrite("Set");
+
+  //print middle button message (Pause)
+  tft.textSetCursor(650, 50 + 480 * 1 / 3); // THIS NEEDS TO CHANGE TO BE NEXT TO THE TOP BUTTON
+  tft.textColor(RA8875_WHITE, RA8875_BLACK); // GUI white text
+  tft.textWrite("Pause"); // Print on GUI
+
+  tft.textEnlarge(1);
+  tft.textSetCursor(650, 50 + 220); // THIS NEEDS TO CHANGE TO BE NEXT TO THE TOP BUTTON
+  tft.textColor(RA8875_WHITE, RA8875_BLACK); // GUI white text
+  tft.textWrite("(Hold)"); // Print on GUI
+
+
+  tft.textEnlarge(2);
+  //print bottom button message
+  tft.textSetCursor(650, 50 + 480 * 2 / 3);
+  tft.textWrite("Reset");
+  //tft.textSetCursor(640,100+480*2/3);
+  //tft.textWrite("Weight");
+}//end printForceChangeMessage function
+
+//display reset //TODO:
+void displayResetPage(void){
+  tft.textEnlarge(2);
+  tft.textSetCursor(10, 50);
+  tft.textColor(RA8875_WHITE, RA8875_BLACK);
+  tft.textWrite("Confirm the reset");
+
+  tft.textSetCursor(625, 480 * 0 / 3); // Change position to match Top Button
+  tft.textTransparent(RA8875_WHITE);
+  tft.textEnlarge(2);
+  tft.textWrite("Reset");
+  tft.textSetCursor(625, 50 + 480 * 0 / 3);
+  tft.textTransparent(RA8875_WHITE);
+  tft.textEnlarge(1);
+  tft.textWrite("Actuators");
+
+  tft.textSetCursor(600, 50 + 480 * 1 / 3); // Change Position to match Middle Button
+  tft.textTransparent(RA8875_WHITE);
+  tft.textEnlarge(2);
+  tft.textWrite("Cancel");
+
+  tft.textSetCursor(625, 480 * 2 / 3); // Change position to match Bottom Button
+  tft.textTransparent(RA8875_WHITE);
+  tft.textWrite("Reset");
+  tft.textEnlarge(1);
+  tft.textSetCursor(625, 50 + 480 * 2 / 3);
+  tft.textWrite("System");
+  tft.textEnlarge(2);
 }
