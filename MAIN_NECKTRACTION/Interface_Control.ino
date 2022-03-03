@@ -33,6 +33,7 @@ void setForceCommand() {
   if (buttonBottomState == 0) { // Reset Button
     Serial.println("over here");
     CaseValMain = 3;
+    previousDisplayed = 10;
     return;
   }
   //if selected continue or set
@@ -118,6 +119,14 @@ void UpdateCurrentForce() {
     tft.textSetCursor(360, 100 + 480 * 2 / 3); // Needs to be aligned with the Text of Current Force
     printValue(currentForce);
   }
+ //   int potPinL1_reading = analogRead(potPinL1);
+  //  int potPinR2_reading = analogRead(potPinR2);
+   // tft.textColor(RA8875_WHITE, RA8875_BLACK);
+    //tft.textSetCursor(10, 100 + 400); // Needs to be moved to the top left corner
+    //tft.textWrite("Left Potentiometer Reading: ");
+    //tft.textSetCursor(10, 100 + 425); // Needs to be aligned with the Text of Current Force
+    //printValue(potPinL1_reading);
+  // Need else statement if the amplifier is not reading correctly.
 }
 
 // Keep for reference/////

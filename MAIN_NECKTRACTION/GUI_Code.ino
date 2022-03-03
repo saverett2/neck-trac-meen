@@ -8,6 +8,7 @@ void StartGuiDisplay()
   tft.fillScreen(RA8875_WHITE); // set the background the white
   tft.textEnlarge(7);
   tft.textMode();
+  //tft.setFont(&FreeSans9pt7b);
   delay(10);
 }
 
@@ -17,6 +18,7 @@ void runStartWarnings() {
   // Fill screen with black
 
   tft.fillScreen(RA8875_WHITE);
+  //tft.setFont(&FreeSans9pt7b);
   tft.textColor(RA8875_RED, RA8875_WHITE);
   tft.textSetCursor(120, 400 * 1 / 2);
   tft.textWrite("University of Utah");

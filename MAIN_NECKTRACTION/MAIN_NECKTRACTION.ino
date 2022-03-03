@@ -19,21 +19,24 @@
 #include <SPI.h>
 #include "Adafruit_GFX.h"
 #include "Adafruit_RA8875.h"
+//#include "Fonts/FreeMonoBoldOblique12pt7b.h"
+//#include <Fonts/FreeSans9pt7b.h>
 
 //*** Define Pins ***//
 
 // Motor Pins
-const int potPinL1 = 7; // Analog pin 13 for the left motor, device 1
-const int potPinR2 = 6; // Analog pin 14 for the right motor, device 2
+const int potPinL1 = A7; // Analog pin 13 for the left motor, device 1
+const int potPinR2 = A6; // Analog pin 14 for the right motor, device 2
 
 
 // Load Cell Pins
 const int loadcellDOUT = 11; // Load Cell
 const int loadcellSCK = 12; // Load Cell
+
 // Dial Pins
-//
-//
-//
+// Intitalized in the encoderShort tab
+// PIN_IN1 is 19
+// PIN_IN2 is 18
 
 // Button Pins
 const int topButtonPin = 5;
@@ -51,7 +54,7 @@ const int MidLED = 32;
 const int BotLED = 33;
 
 
-// Define device numbers
+// Define device numbers for motor
 bool newOrders = false;
 bool firstTime = true;
 char message[32];
@@ -66,7 +69,7 @@ int travelSpeedPercentage;
 double leftPosition;
 double rightPosition;
 
-// Define global variables
+// Define variable for PID
 unsigned long lastTime = 0; // Starting time for PID controller (ms)
 double Kp = 4; // Proportional Gain (TBD)
 double Kd = 0.1; // Derivative Gain (TBD)
@@ -83,45 +86,45 @@ double m1_pos = 0;
 double m2_pos = 0;
 
 // Difference Desired and Current Force
-int DiffDesired; // TBD
+int DiffDesired; // Ramp up ramp down functions
 
-// Warning Start up Sequence Global Varibables
-int lastButtonStateTop = 1;// Needs to go into global variables
-int lastButtonStateBot = 1;//
+// Button Debounce Variables
+int lastButtonStateTop = 1;
+int lastButtonStateBot = 1;
 int lastButtonStateMid = 1;
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 100;    // the debounce time; increase if the output flickers
-
 int readingTop = 1;
 int readingMid = 1;
 int readingBot = 1;
 
+// Variables to display page once
 int previousDisplayed = 1;
 int previousCas = 0;
 int CaseValStart  = constrain(CaseValStart, 1, 6); // Constrain the varibles to case 1 to 6, change if additional warnings are added.
+int writeback = 1;
 
 
-// Intial Value needed to set force to make motors run
+// Initial the Set Force and Main Case Variables
 int setForce = 1;
 int CaseValMain = 1;
+
 //time variables
 unsigned long t_ms = 0;
-double t = 0;                   //current time
-double t_old = 0;               //previous encoder time
+double t = 0;//current time
+double t_old = 0;//previous time
 int fillBlack3 = 1;
 double initialForce = 0;
 
-float resetTime;
-int motorResetDelay = 10000;
-int Resetpin = 35;
+float resetTime; // The time in which reset system button is pushed
+int motorResetDelay = 30000; // 30 seconds to pull the motors back and then reset
+int Resetpin = 35; // The Pin to reset the ardunio
 
-
-int writeback = 1;
-
+// Load Cell and calibration factor
 HX711 loadcell;
 float calibrationFactor = 23550.f; // Found experimentally with Merryweather's load cell
 
-// Set up display
+// Initialize and set up display
 #define RA8875_INT 3
 #define RA8875_CS 10
 #define RA8875_RESET 9//any pin or nothing!
@@ -138,12 +141,12 @@ PID myPID(&currentForce, &travelSpeedPID, &desiredForce, Kp, Ki, Kd, DIRECT);
 
 void setup() {
   Serial.begin(9600);
+  //TEST CODE
   //while(1==1)
   //{
   //  setMotorSpeed(smcDeviceNumberL1, 50);
   //  setMotorSpeed(smcDeviceNumberR2, 50);
   //}
-
   //Initialize Pin Modes Buttons
   pinMode(topButtonPin, INPUT_PULLUP);
   pinMode(midButtonPin, INPUT_PULLUP);
@@ -151,7 +154,7 @@ void setup() {
   digitalWrite(Resetpin, HIGH);
   pinMode(Resetpin, OUTPUT);
 
-  // intialize LED Pin Mode
+  // Intialize LED Pin Mode
   pinMode(TopLED, OUTPUT);
   pinMode(MidLED, OUTPUT);
   pinMode(BotLED, OUTPUT);
@@ -161,11 +164,12 @@ void setup() {
   if (!tft.begin(RA8875_800x480)) {
     Serial.println("RA8875 Not Found!");
     while (1);
-    ////////////////////////////////
+    // Turn off system, check display/screen connections and display driver board.
+    // Can write script to light button LEDs in order to signify that the screen is not connected properly.
   }
+
   // Setup Encoder for Dial
   setupEncoder();
-
 
   // Exit Safe Start
   Serial.println("Start Exit Safe Start");
@@ -174,21 +178,22 @@ void setup() {
   Wire.begin();
   exitSafeStart(smcDeviceNumberL1); // Disable safe start and allow the motors to move
   exitSafeStart(smcDeviceNumberR2);
-  //delay(100);
+  //Needed to run the motors
 
   // Start the GUI display screen
   StartGuiDisplay();
-  Serial.println("StartGUI");
+  //Serial.println("StartGUI");
 
-  Serial.println("Start Warnings");
-
+  //Serial.println("Start Warnings");
   runStartWarnings(); // Goes through a safety check, found in GUI_Code
 
-  // Set up Display to print Desired and Current Force
 
+  //// THIS
+  // Set up Display to print Desired and Current Force
   delay(1000);
   tft.fillScreen(RA8875_BLACK);
   tft.textEnlarge(2);
+
   //set up force display
   tft.textSetCursor(10, 100 + 480 * 2 / 3);
   tft.textWrite("Desired Force: ");
@@ -227,7 +232,12 @@ void loop() {
   //RecvWithStartEndMarkers(); // Read data from serial monitor
 
   // Check if load cell is ready to give measurement and display measurement
+
   UpdateCurrentForce();
+  int potPinL1_reading = analogRead(potPinL1);
+  int potPinR2_reading = analogRead(potPinR2);
+
+
   switch (CaseValMain) {
 
     case 1:
@@ -235,7 +245,7 @@ void loop() {
       setForceCommand();
       break;
 
-    case 2: // Additional Cases can be added to add progressive checks to stop motors and ask for prompt to continue
+    case 2: // Additional Cases can be added to add progressive checks to stop motors and ask for prompts to continue
 
       // The Main Course
 
@@ -333,14 +343,27 @@ void loop() {
         travelSpeed = 1;
       }
       if (abs(DiffDesired) >= 0.5 * desiredForce ) {
-        travelSpeed = 100 * travelSpeed;
-      }
-      if ((abs(DiffDesired) < 0.5 * desiredForce) && (abs(DiffDesired) >= 0.1 * desiredForce)) {
-        travelSpeed = 75 * travelSpeed;
-      }
-      if (abs(DiffDesired) < 0.1 * desiredForce ) {
         travelSpeed = 25 * travelSpeed;
       }
+      if ((abs(DiffDesired) < 0.5 * desiredForce) && (abs(DiffDesired) >= 0.1 * desiredForce)) {
+        travelSpeed = 20 * travelSpeed;
+      }
+      if (abs(DiffDesired) < 0.1 * desiredForce ) {
+        travelSpeed = 10 * travelSpeed;
+      }
+
+      //      if ((potPinL1_reading <= 200)) { // tenative needs to be test********
+      //        // Could change this out for the PauseContinue function
+      //        Serial.println("STOP MOTOR");
+      //        myPID.SetMode(MANUAL);
+      //        stopBoth();
+      //        CaseValMain = 1; // Send back to change force and wait until new force is set
+      //        // or set new case to tell doctors that force is reached.
+      //        break;
+      //      }
+
+
+
 
       myPID.SetMode(MANUAL);
       setSpeedBoth(travelSpeed);
@@ -354,16 +377,13 @@ void loop() {
     case 3:
       Serial.println("We are in Main Case 3");
 
-      if (fillBlack3 == 1) { // Code to Refresh Screen Once, fill with black to erase all previous text
-        tft.fillScreen(RA8875_BLACK);
-        fillBlack3 = 0;
-      }
       if (previousDisplayed != 2) {
         // Turn on Active Buttons
         digitalWrite(TopLED, HIGH);
         digitalWrite(MidLED, HIGH);
         digitalWrite(BotLED, HIGH);
 
+        tft.fillScreen(RA8875_BLACK);
         tft.textEnlarge(2);
         tft.textSetCursor(10, 50);
         tft.textColor(RA8875_WHITE, RA8875_BLACK);
@@ -394,10 +414,6 @@ void loop() {
         tft.textSetCursor(625, 50 + 480 * 2 / 3);
         tft.textWrite("System");
         tft.textEnlarge(2);
-
-
-
-
 
         previousDisplayed = 2;
       }
@@ -462,10 +478,12 @@ void loop() {
       lastButtonStateBot = readingBot;
       break;
 
-    case 4:
+    case 4: //Reset the entire system (pull actuators to 0, resent board)
       Serial.println("We are in Main Case 4");
       // reset linear actuators
       Serial.println("Pull Back the Motors");
+      potPinL1_reading = analogRead(potPinL1);
+      potPinR2_reading = analogRead(potPinR2);
       if (previousDisplayed != 3) {
         tft.fillScreen(RA8875_BLACK);
         tft.textEnlarge(2);
@@ -474,15 +492,23 @@ void loop() {
         tft.textWrite("Please wait, resetting system...");
         previousDisplayed = 3;
       }
+      //if ((potPinL1_reading >= 400) || (potPinR2_reading >= 400)) {
       myPID.SetMode(MANUAL);
       travelSpeed = -100;
       setSpeedBoth(travelSpeed);
+      //}
+      //      else if ((potPinL1_reading < 400) || (potPinR2_reading < 400)) {
+      //        myPID.SetMode(MANUAL);
+      //        stopBoth();
+      //      }
       if ((millis() - resetTime) >= motorResetDelay) { // Reset the Entire System
         Serial.println("I am going to reset");
         digitalWrite(Resetpin, LOW);
       }
       break;
     // Need to code a way to reset the system after actuators have reached their starting points
+
+
 
     case 5: // This case is to *RESET ACTUATORS ONLY*
       Serial.println("I am in main case 5");
@@ -495,9 +521,18 @@ void loop() {
         previousDisplayed = 3;
       }
 
-      myPID.SetMode(MANUAL);
-      travelSpeed = -100;
-      setSpeedBoth(travelSpeed);
+      potPinL1_reading = analogRead(potPinL1);
+      potPinR2_reading = analogRead(potPinR2);
+      if ((potPinL1_reading >= 400) || (potPinR2_reading >= 400)) { // Make this a function to call here
+        myPID.SetMode(MANUAL);
+        travelSpeed = -100;
+        setSpeedBoth(travelSpeed);
+      }
+      else if ((potPinL1_reading < 400) || (potPinR2_reading < 400)) {
+        myPID.SetMode(MANUAL);
+        stopBoth();
+      }
+
       if ((millis() - resetTime) >= motorResetDelay) {
         Serial.println("The Actuators are going home");
       }
@@ -512,7 +547,7 @@ void loop() {
 
   if (myPID.GetMode() == AUTOMATIC) {
     myPID.Compute(); // Compute with each loop
-    travelSpeedPID = constrain(travelSpeedPID, -100, 100); // constrain travel speed to be within reasonable value
+    travelSpeedPID = constrain(travelSpeedPID, -100, 25); // constrain travel speed to be within reasonable value
     travelSpeedPercentage = (int) travelSpeedPID; // Cast to int to send to motors
     setSpeedBoth(travelSpeedPercentage); // set speed of the motors
     //Serial.println();
