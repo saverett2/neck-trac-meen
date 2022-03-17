@@ -1,0 +1,23 @@
+//Checks the expected distance with the current force.
+//If the actual distacance to too much or too little (within margin)
+//returns true to say distance is out of expected bounds
+//
+//currentForce: Force, in pounds, that loadcell is reading
+//currentDist:  Distance, in mm, that potentiometers are reading
+bool outOfSafetyDistBounds(float currentForce, float currentDist){
+  //constant variables
+  const float errorMargin = 10;          //in percentage 88 = 88%, .1 = 0.1%
+  const float neckStiffness = 200;        //pounds per mm
+
+  //expected distance acording to Hooke's law
+  float expectedDist = neckStiffness * currentForce;
+
+  //error assuming "expected" is correct
+  float neckDistError = 100*abs(currentDist - expectedDist)/expectedDist;//percentage
+
+  //if error is greater than our error margin, return true
+  if( neckDistError > errorMargin){
+    return true;
+  }
+  return false;
+}
