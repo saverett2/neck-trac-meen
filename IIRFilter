@@ -1,0 +1,8 @@
+//Filters values to reduce noise with a 
+// rolling IIR filter. Increase alpha to 
+// increase damping/filtering
+//
+float IIRFilter(float oldVal, float currVal){
+  float alpha = 0.4
+  return oldVal*alpha + currVal*(1-alpha);
+}
