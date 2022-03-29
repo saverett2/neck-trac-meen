@@ -13,7 +13,7 @@ void StartGuiDisplay()
 }
 
 void runStartWarnings() {
-  
+
   CaseValStart = 1;
   // Fill screen with black
 
@@ -120,20 +120,6 @@ void runStartWarnings() {
           tft.fillScreen(RA8875_BLACK);
           int loadcelltimeold = millis();
           while (loadcell.is_ready() != true) {
-            while ((millis() - loadcelltimeold) > 5000)
-            {
-              tft.textEnlarge(6);
-              tft.textSetCursor(200, 200);
-              tft.textColor(RA8875_RED, RA8875_BLACK); // White Text, in black box
-              tft.textWrite("error code: 101");
-
-              tft.textEnlarge(3);
-              tft.textSetCursor(120, 300);
-              tft.textColor(RA8875_RED, RA8875_BLACK); // White Text, in black box
-              tft.textWrite("OP AMP Timed out...");
-
-              Serial.println("OP Amp is not working/connected");
-            }
             tft.textEnlarge(4);
             tft.textSetCursor(100, 150);
             tft.textColor(RA8875_WHITE, RA8875_BLACK); // White Text, in black box
@@ -204,7 +190,9 @@ void runStartWarnings() {
           tft.textEnlarge(2);
           tft.textSetCursor(10, 480 * 1 / 2);
           tft.textColor(RA8875_WHITE, RA8875_BLACK); // GUI white text
-          tft.textWrite("Is the tongs attached securely to the Force Sensor?"); // Print on GUI
+          tft.textWrite("Are the tongs attached securely");
+          tft.textSetCursor(10, 290); // Needs to be checked for location
+          tft.textWrite("to the Force Sensor?"); // Print on GUI
 
           // function to display "Continue and Back"
           ContinueBack();
@@ -265,6 +253,36 @@ void PauseContinue() { // If the pauseButtonState == 0 move to this function and
 }
 
 
-void GUILayout() {
+void PrintSerialMonitor() {
+  // Time
+  Serial.print(t);
+  Serial.print("  ");
+  // Force
+  Serial.print(currentForce);
+  Serial.print("  ");
+  
+  // Position
+  //Low-Pass filter
+  potPinL1_reading[2] = IIRFilter( potPinL1_reading[0], potPinL1_reading[1]);
+  potPinR2_reading[2] = IIRFilter( potPinR2_reading[0], potPinR2_reading[1]);
+  
+  //assign previous val as the currnet value. 
+  potPinL1_reading[0] = potPinL1_reading[2];
+  potPinR2_reading[0] = potPinR2_reading[2];
 
+  //average potentiometer values and convert to distance (mm)
+  AvgPotRead = ((potPinL1_reading[2] + potPinR2_reading[2]) / 2.0 );
+  DistPosition = (152.0 / 856.0) * ((float)AvgPotRead - 883.0) + 152.0; //(mm)
+
+  //print distance to serial display
+  Serial.print(DistPosition);
+  Serial.println(" ");
+}
+
+//Filters values to reduce noise with a 
+// rolling IIR filter. Increase alpha to 
+// increase damping/filtering
+float IIRFilter(float oldVal, float currVal){
+  float alpha = 0.5875;
+  return oldVal*alpha + currVal*(1-alpha);
 }

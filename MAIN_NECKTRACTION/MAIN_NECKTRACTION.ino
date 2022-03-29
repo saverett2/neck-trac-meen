@@ -68,12 +68,18 @@ double travelSpeedPID;
 int travelSpeedPercentage;
 double leftPosition;
 double rightPosition;
-
+float potPinL1_reading[] = {0, 0, 0};
+float potPinR2_reading[] = {0, 0, 0};
+float AvgPotRead = 0;
+float DistPosition;
 // Define variable for PID
 unsigned long lastTime = 0; // Starting time for PID controller (ms)
-double Kp = 4; // Proportional Gain (TBD)
-double Kd = 0.1; // Derivative Gain (TBD)
-double Ki = 1; // Integral Gain (TBD)
+
+
+double Kp = 3.5; // Proportional Gain (TBD)
+double Kd = 0; // Derivative Gain (TBD)
+double Ki = 0.01; // Integral Gain (TBD)
+
 double sampleFrequency = 10; //Frequency for reading force sensor and updating PID (Hz);
 double sampleTime = (1 / sampleFrequency) * 1000; //Time between samples (ms)
 double inputForce = 0;
@@ -86,7 +92,7 @@ double m1_pos = 0;
 double m2_pos = 0;
 
 // Difference Desired and Current Force
-int DiffDesired; // Ramp up ramp down functions
+double DiffDesired; // Ramp up ramp down functions
 
 // Button Debounce Variables
 int lastButtonStateTop = 1;
@@ -221,6 +227,9 @@ void setup() {
 void loop() {
   t_ms = micros();
   t = t_ms / 1000000.0;
+  potPinL1_reading[1] = analogRead(potPinL1);
+  potPinR2_reading[1] = analogRead(potPinR2);
+  PrintSerialMonitor();
   //Code to Test Motors for PID Controller
   //m1_pos = (float(analogRead(potPinM1)) - 34) * 150 / 842.0;
   //m2_pos = (float(analogRead(potPinM2)) - 32) * 150 / 840;
@@ -234,8 +243,7 @@ void loop() {
   // Check if load cell is ready to give measurement and display measurement
 
   UpdateCurrentForce();
-  int potPinL1_reading = analogRead(potPinL1);
-  int potPinR2_reading = analogRead(potPinR2);
+
 
 
   switch (CaseValMain) {
@@ -255,12 +263,6 @@ void loop() {
       readingTop = digitalRead(topButtonPin);
       readingMid = digitalRead(midButtonPin);
       readingBot = digitalRead(bottomButtonPin);
-
-      Serial.println(" This is the state of the mid button");
-      Serial.println(buttonMidState);
-      Serial.println(" This is the state of the bottom button");
-      Serial.println(buttonBottomState);
-
 
       // Three buttons are lit up
       digitalWrite(TopLED, HIGH);
@@ -283,13 +285,11 @@ void loop() {
           buttonTopState = readingTop;
           buttonBottomState = readingBot;
           buttonMidState = readingMid;
-          Serial.println(" I am getting through the button state change");
-          Serial.println(" This is the state of the mid button");
-          Serial.println(buttonMidState);
+
 
           // If mid button is pushed then pause, send back to case 1 to change desired force
           if ((buttonMidState == 0) && (buttonBottomState == 1)) {
-            Serial.println("STOP MOTOR");
+            //Serial.println("STOP MOTOR");
             myPID.SetMode(MANUAL);
             stopBoth();
             CaseValMain = 1;
@@ -297,8 +297,8 @@ void loop() {
           }
           // If bottom button is pushed, reset the system, send to case 3
           if ((buttonBottomState == 0) && (buttonMidState == 1)) {
-            Serial.println("STOP MOTOR");
-            Serial.println("Bottom Button is Pushed");
+            //Serial.println("STOP MOTOR");
+            //Serial.println("Bottom Button is Pushed");
             myPID.SetMode(MANUAL);
             stopBoth();
             CaseValMain = 3;
@@ -310,47 +310,47 @@ void loop() {
       ///////// READ BUTTON CODE END
 
       // Apply Set Force and Start Motors
-      Serial.println("We are in Main Case 2");
+      //Serial.println("We are in Main Case 2");
       // Show Current and Desired Force on Display
-      Serial.print("Before Desired Force ");
-      Serial.println(desiredForce);
-      Serial.print("Before Current Force");
-      Serial.println(currentForce);
+      //Serial.print("Before Desired Force ");
+      //Serial.println(desiredForce);
+      //Serial.print("Before Current Force");
+      //Serial.println(currentForce);
 
       //myPID.SetMode(AUTOMATIC);
-      Serial.print("After Desired Force ");
-      Serial.println(desiredForce);
-      Serial.print("After Current Force");
-      Serial.println(currentForce);
+      //Serial.print("After Desired Force ");
+      //Serial.println(desiredForce);
+      //Serial.print("After Current Force");
+      //Serial.println(currentForce);
 
       // Ramp up,Ramp Down
 
       // Calculate the Diff
-      DiffDesired = desiredForce - currentForce;
-      if ((abs(DiffDesired) <= 0.01 * desiredForce)) {
-        // Could change this out for the PauseContinue function
-        Serial.println("STOP MOTOR");
-        myPID.SetMode(MANUAL);
-        stopBoth();
-        CaseValMain = 1; // Send back to change force and wait until new force is set
-        // or set new case to tell doctors that force is reached.
-        break;
-      }
-      if (DiffDesired < 0) {
-        travelSpeed = -1;
-      }
-      else {
-        travelSpeed = 1;
-      }
-      if (abs(DiffDesired) >= 0.5 * desiredForce ) {
-        travelSpeed = 25 * travelSpeed;
-      }
-      if ((abs(DiffDesired) < 0.5 * desiredForce) && (abs(DiffDesired) >= 0.1 * desiredForce)) {
-        travelSpeed = 20 * travelSpeed;
-      }
-      if (abs(DiffDesired) < 0.1 * desiredForce ) {
-        travelSpeed = 10 * travelSpeed;
-      }
+//      DiffDesired = desiredForce - currentForce;
+//      if ((abs(DiffDesired) <= 0.01 * desiredForce)) {
+//        // Could change this out for the PauseContinue function
+//        //Serial.println("STOP MOTOR");
+//        myPID.SetMode(MANUAL);
+//        stopBoth();
+//        CaseValMain = 1; // Send back to change force and wait until new force is set
+//        // or set new case to tell doctors that force is reached.
+//        break;
+//      }
+//      if (DiffDesired < 0) {
+//        travelSpeed = -1;
+//      }
+//      else {
+//        travelSpeed = 1;
+//      }
+//      if (abs(DiffDesired) >= 0.5 * desiredForce ) {
+//        travelSpeed = 25 * travelSpeed;
+//      }
+//      if ((abs(DiffDesired) < 0.5 * desiredForce) && (abs(DiffDesired) >= 0.1 * desiredForce)) {
+//        travelSpeed = 20 * travelSpeed;
+//      }
+//      if (abs(DiffDesired) < 0.1 * desiredForce ) {
+//        travelSpeed = 15 * travelSpeed;
+//      }
 
       //      if ((potPinL1_reading <= 200)) { // tenative needs to be test********
       //        // Could change this out for the PauseContinue function
@@ -365,8 +365,8 @@ void loop() {
 
 
 
-      myPID.SetMode(MANUAL);
-      setSpeedBoth(travelSpeed);
+      myPID.SetMode(AUTOMATIC);
+      //setSpeedBoth(travelSpeed);
 
       lastButtonStateTop = readingTop;
       lastButtonStateMid = readingMid;
@@ -423,29 +423,29 @@ void loop() {
       readingMid = digitalRead(midButtonPin);
       readingBot = digitalRead(bottomButtonPin);
 
-      Serial.println("printing button state");
-      Serial.println(buttonTopState);
-      Serial.println(buttonMidState);
-      Serial.println(buttonBottomState);
-      Serial.println(readingTop);
-      Serial.println(readingMid);
-      Serial.println(readingBot);
+      //Serial.println("printing button state");
+      //Serial.println(buttonTopState);
+      //Serial.println(buttonMidState);
+      //Serial.println(buttonBottomState);
+      //Serial.println(readingTop);
+      //Serial.println(readingMid);
+      //Serial.println(readingBot);
 
       // If the switch changed, due to noise or pressing:
       if ((readingMid != lastButtonStateMid) || (readingBot !=  lastButtonStateBot) || (readingTop != lastButtonStateTop)) {
         // reset the debouncing timer
         lastDebounceTime = millis();
-        Serial.println("reset last debounce time");
+        //Serial.println("reset last debounce time");
       }
-      Serial.println("After first if");
+      //Serial.println("After first if");
       // millis time delay
       if ((millis() - lastDebounceTime) > debounceDelay) {
         // whatever the reading is at, it's been there for longer than the debounce
         // delay, so take it as the actual current state:
-        Serial.println("After second if");
+        //Serial.println("After second if");
         // if the button state has changed:
         if ((readingTop != buttonTopState) || (readingBot != buttonBottomState) || (readingMid != buttonMidState)) {
-          Serial.println("After button state change");
+          //Serial.println("After button state change");
           buttonTopState = readingTop;
           buttonBottomState = readingBot;
           buttonMidState = readingMid;
@@ -464,7 +464,7 @@ void loop() {
           }
           // If bottom button is pushed, reset the system, send to case 3
           if ((buttonBottomState == 0) && ( buttonMidState == 1)) {
-            Serial.println("We are going to main case 4");
+            //Serial.println("We are going to main case 4");
             CaseValMain = 4;
             resetTime = millis();
             break;
@@ -479,11 +479,11 @@ void loop() {
       break;
 
     case 4: //Reset the entire system (pull actuators to 0, resent board)
-      Serial.println("We are in Main Case 4");
+      //Serial.println("We are in Main Case 4");
       // reset linear actuators
-      Serial.println("Pull Back the Motors");
-      potPinL1_reading = analogRead(potPinL1);
-      potPinR2_reading = analogRead(potPinR2);
+      //Serial.println("Pull Back the Motors");
+      potPinL1_reading[1] = analogRead(potPinL1);
+      potPinR2_reading[1] = analogRead(potPinR2);
       if (previousDisplayed != 3) {
         tft.fillScreen(RA8875_BLACK);
         tft.textEnlarge(2);
@@ -502,7 +502,7 @@ void loop() {
       //        stopBoth();
       //      }
       if ((millis() - resetTime) >= motorResetDelay) { // Reset the Entire System
-        Serial.println("I am going to reset");
+        //Serial.println("I am going to reset");
         digitalWrite(Resetpin, LOW);
       }
       break;
@@ -511,7 +511,7 @@ void loop() {
 
 
     case 5: // This case is to *RESET ACTUATORS ONLY*
-      Serial.println("I am in main case 5");
+      //Serial.println("I am in main case 5");
       if (previousDisplayed != 3) {
         tft.fillScreen(RA8875_BLACK);
         tft.textEnlarge(2);
@@ -521,20 +521,20 @@ void loop() {
         previousDisplayed = 3;
       }
 
-      potPinL1_reading = analogRead(potPinL1);
-      potPinR2_reading = analogRead(potPinR2);
-      if ((potPinL1_reading >= 400) || (potPinR2_reading >= 400)) { // Make this a function to call here
-        myPID.SetMode(MANUAL);
-        travelSpeed = -100;
-        setSpeedBoth(travelSpeed);
-      }
-      else if ((potPinL1_reading < 400) || (potPinR2_reading < 400)) {
-        myPID.SetMode(MANUAL);
-        stopBoth();
-      }
+      //potPinL1_reading = analogRead(potPinL1);
+      //potPinR2_reading = analogRead(potPinR2);
+      //if ((potPinL1_reading >= 400) || (potPinR2_reading >= 400)) { // Make this a function to call here
+      myPID.SetMode(MANUAL);
+      travelSpeed = -100;
+      setSpeedBoth(travelSpeed);
+      //}
+      //else if ((potPinL1_reading < 400) || (potPinR2_reading < 400)) {
+      //myPID.SetMode(MANUAL);
+      //stopBoth();
+      //}
 
-      if ((millis() - resetTime) >= motorResetDelay) {
-        Serial.println("The Actuators are going home");
+      if ((millis() - resetTime) <= motorResetDelay) {
+        //Serial.println("The Actuators are going home");
       }
       else {
         CaseValMain = 1;
@@ -547,7 +547,7 @@ void loop() {
 
   if (myPID.GetMode() == AUTOMATIC) {
     myPID.Compute(); // Compute with each loop
-    travelSpeedPID = constrain(travelSpeedPID, -100, 25); // constrain travel speed to be within reasonable value
+    travelSpeedPID = constrain(travelSpeedPID, -100, 50); // constrain travel speed to be within reasonable value
     travelSpeedPercentage = (int) travelSpeedPID; // Cast to int to send to motors
     setSpeedBoth(travelSpeedPercentage); // set speed of the motors
     //Serial.println();

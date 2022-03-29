@@ -14,12 +14,12 @@ void setForceCommand() {
 
   while ((buttonTopState == 1) &&  (buttonBottomState == 1)) {
     //update desiredForce if it changes
-    Serial.println("We are in the while loop Force Command");
-    Serial.println(digitalRead(topButtonPin));
-    Serial.println(digitalRead(bottomButtonPin));
+    //Serial.println("We are in the while loop Force Command");
+    //Serial.println(digitalRead(topButtonPin));
+    //Serial.println(digitalRead(bottomButtonPin));
 
     forceDialInput = readForceDial(); // Reading the force dial continually
-    Serial.println(forceDialInput);
+    //Serial.println(forceDialInput);
     if (desiredForce != forceDialInput ) {
       desiredForce = forceDialInput;
       printForceChangeMessage(setForce, desiredForce);
@@ -31,15 +31,15 @@ void setForceCommand() {
   //if selected cancelled
 
   if (buttonBottomState == 0) { // Reset Button
-    Serial.println("over here");
+    //Serial.println("over here");
     CaseValMain = 3;
     previousDisplayed = 10;
     return;
   }
   //if selected continue or set
   setForce = desiredForce;
-  Serial.println("Set Force");
-  Serial.println(setForce);
+  //Serial.println("Set Force");
+  //Serial.println(setForce);
   t_ms = micros();
   t_old = t_ms / 1000000.0;
   CaseValMain = 2;
@@ -119,13 +119,13 @@ void UpdateCurrentForce() {
     tft.textSetCursor(360, 100 + 480 * 2 / 3); // Needs to be aligned with the Text of Current Force
     printValue(currentForce);
   }
- //   int potPinL1_reading = analogRead(potPinL1);
+  //   int potPinL1_reading = analogRead(potPinL1);
   //  int potPinR2_reading = analogRead(potPinR2);
-   // tft.textColor(RA8875_WHITE, RA8875_BLACK);
-    //tft.textSetCursor(10, 100 + 400); // Needs to be moved to the top left corner
-    //tft.textWrite("Left Potentiometer Reading: ");
-    //tft.textSetCursor(10, 100 + 425); // Needs to be aligned with the Text of Current Force
-    //printValue(potPinL1_reading);
+  // tft.textColor(RA8875_WHITE, RA8875_BLACK);
+  //tft.textSetCursor(10, 100 + 400); // Needs to be moved to the top left corner
+  //tft.textWrite("Left Potentiometer Reading: ");
+  //tft.textSetCursor(10, 100 + 425); // Needs to be aligned with the Text of Current Force
+  //printValue(potPinL1_reading);
   // Need else statement if the amplifier is not reading correctly.
 }
 

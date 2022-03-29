@@ -83,10 +83,10 @@ int readForceDial()
 
   int newPos = encoder->getPosition();
   if (pos != newPos) {
-    Serial.print("pos:");
-    Serial.print(newPos);
-    Serial.print(" dir:");
-    Serial.println((int)(encoder->getDirection()));
+    //Serial.print("pos:");
+    //Serial.print(newPos);
+    //Serial.print(" dir:");
+    //Serial.println((int)(encoder->getDirection()));
     pos = newPos;
   } // if
   return pos;
