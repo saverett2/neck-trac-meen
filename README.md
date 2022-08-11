@@ -7,9 +7,9 @@ Copyright:   Neck traction Team Members - This work may not be copied for use in
 # Overview
 This code power's the neck traction robot to perform disc separation in applicable surgeries. The code controls the actuators and displays information to the user interface. Additionally the user interface collects user input, such as force setting for the robot. 
 
-# Future Development
-Ability to switch to position control displacement measurements. This may require improved encoders. 
-Data logging to a USB device.
+## Future Development
+1. Ability to switch to position control displacement measurements. This may require improved encoders. 
+2. Data logging to a USB device.
 
 ### Resources
   1. adafruit display library
